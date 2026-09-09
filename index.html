@@ -370,56 +370,6 @@
         </div>
       </div>
 
-      <!-- Current User Context Card -->
-      <div class="bg-neutral-950 border border-cf-border rounded-lg p-3 space-y-2 text-xs">
-        <div class="flex items-center justify-between">
-          <div class="text-[11px] font-mono text-neutral-500 uppercase tracking-wider">
-            สถานะผู้ใช้งานปัจจุบัน
-          </div>
-          <select id="userSelectorSide" onchange="handleUserChange(this.value)" class="bg-neutral-900 border border-cf-border rounded text-[11px] text-neutral-300 px-2 py-0.5 focus:outline-none cursor-pointer font-sans">
-            <!-- Populated dynamically via JS -->
-          </select>
-        </div>
-        <div class="flex items-center gap-2 pt-1">
-          <div id="sideUserAvatar" class="w-7 h-7 rounded bg-neutral-800 border border-neutral-700 text-white font-mono text-xs flex items-center justify-center font-bold">
-            WC
-          </div>
-          <div class="truncate">
-            <div id="sideUserName" class="font-medium text-white truncate">ชื่อผู้ใช้งาน</div>
-            <div id="sideUserRole" class="text-[11px] text-neutral-400 truncate">ตำแหน่ง</div>
-          </div>
-        </div>
-        <div class="pt-2 border-t border-neutral-900 text-[11px] text-neutral-400 space-y-1 font-mono">
-          <div class="flex justify-between">
-            <span class="text-neutral-500">สิทธิ์:</span>
-            <span id="sideUserPermission" class="text-neutral-300">Admin</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-neutral-500">สังกัด:</span>
-            <span class="text-neutral-300 truncate">สำนักงานการตลาดฯ</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- University Account Details -->
-      <div class="bg-neutral-950 border border-cf-border rounded-lg p-3 space-y-2 text-[11px] font-mono text-neutral-400">
-        <div class="text-neutral-500 uppercase tracking-wider text-[10px]">ข้อมูลระบบ (System Info)</div>
-        <div class="space-y-1">
-          <div class="flex justify-between">
-            <span class="text-neutral-600">Platform:</span>
-            <span class="text-neutral-300 truncate">Cloudflare Pages</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-neutral-600">Database:</span>
-            <span class="text-emerald-400 truncate">Google Sheets (Live)</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-neutral-600">Sync:</span>
-            <span class="text-neutral-300">Apps Script Web App</span>
-          </div>
-        </div>
-      </div>
-
     </aside>
 
   </div>
