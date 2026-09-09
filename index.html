@@ -69,8 +69,12 @@
     .shake-animation {
       animation: pinShake 0.35s ease-in-out;
     }
-    .pin-box {
-      -webkit-text-security: disc;
+    @keyframes blinkCursor {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    .pin-caret {
+      animation: blinkCursor 0.9s infinite;
     }
   </style>
 </head>
@@ -687,18 +691,18 @@
         <p class="text-xs text-neutral-400">กรุณาระบุรหัส PIN 8 หลักเพื่อเข้าสู่ระบบมอบหมายงานใหม่</p>
       </div>
 
-      <!-- 8-Digit PIN Input Grid -->
-      <div id="pinInputWrapper" class="pt-2">
-        <div class="flex items-center justify-center gap-1.5 sm:gap-2">
-          <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-box pin-box w-9 h-12 sm:w-10 sm:h-13 text-center text-xl sm:text-2xl font-bold bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition" data-index="0" autofocus autocomplete="off">
-          <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-box pin-box w-9 h-12 sm:w-10 sm:h-13 text-center text-xl sm:text-2xl font-bold bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition" data-index="1" autocomplete="off">
-          <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-box pin-box w-9 h-12 sm:w-10 sm:h-13 text-center text-xl sm:text-2xl font-bold bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition" data-index="2" autocomplete="off">
-          <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-box pin-box w-9 h-12 sm:w-10 sm:h-13 text-center text-xl sm:text-2xl font-bold bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition" data-index="3" autocomplete="off">
-          <span class="text-neutral-600 font-mono text-xs px-0.5">-</span>
-          <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-box pin-box w-9 h-12 sm:w-10 sm:h-13 text-center text-xl sm:text-2xl font-bold bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition" data-index="4" autocomplete="off">
-          <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-box pin-box w-9 h-12 sm:w-10 sm:h-13 text-center text-xl sm:text-2xl font-bold bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition" data-index="5" autocomplete="off">
-          <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-box pin-box w-9 h-12 sm:w-10 sm:h-13 text-center text-xl sm:text-2xl font-bold bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition" data-index="6" autocomplete="off">
-          <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-box pin-box w-9 h-12 sm:w-10 sm:h-13 text-center text-xl sm:text-2xl font-bold bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition" data-index="7" autocomplete="off">
+      <!-- 8-Digit PIN Input Group (8 กล่องอินพุตจริง พิมพ์ติดทันที เลื่อนอัตโนมัติ) -->
+      <div id="pinInputWrapper" class="pt-2 w-full flex flex-col items-center">
+        <div class="flex items-center justify-center gap-1.5 sm:gap-2" id="pinInputsContainer">
+          <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" class="pin-digit-box w-9 h-12 sm:w-10 sm:h-13 rounded-lg bg-neutral-900 border border-neutral-700 text-center text-lg sm:text-xl text-white font-bold focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition-all" data-index="0">
+          <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" class="pin-digit-box w-9 h-12 sm:w-10 sm:h-13 rounded-lg bg-neutral-900 border border-neutral-700 text-center text-lg sm:text-xl text-white font-bold focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition-all" data-index="1">
+          <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" class="pin-digit-box w-9 h-12 sm:w-10 sm:h-13 rounded-lg bg-neutral-900 border border-neutral-700 text-center text-lg sm:text-xl text-white font-bold focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition-all" data-index="2">
+          <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" class="pin-digit-box w-9 h-12 sm:w-10 sm:h-13 rounded-lg bg-neutral-900 border border-neutral-700 text-center text-lg sm:text-xl text-white font-bold focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition-all" data-index="3">
+          <span class="text-neutral-600 font-mono text-sm select-none px-0.5">-</span>
+          <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" class="pin-digit-box w-9 h-12 sm:w-10 sm:h-13 rounded-lg bg-neutral-900 border border-neutral-700 text-center text-lg sm:text-xl text-white font-bold focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition-all" data-index="4">
+          <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" class="pin-digit-box w-9 h-12 sm:w-10 sm:h-13 rounded-lg bg-neutral-900 border border-neutral-700 text-center text-lg sm:text-xl text-white font-bold focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition-all" data-index="5">
+          <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" class="pin-digit-box w-9 h-12 sm:w-10 sm:h-13 rounded-lg bg-neutral-900 border border-neutral-700 text-center text-lg sm:text-xl text-white font-bold focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition-all" data-index="6">
+          <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" class="pin-digit-box w-9 h-12 sm:w-10 sm:h-13 rounded-lg bg-neutral-900 border border-neutral-700 text-center text-lg sm:text-xl text-white font-bold focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition-all" data-index="7">
         </div>
 
         <div id="pinErrorMessage" class="text-xs text-rose-400 font-mono font-medium mt-3 min-h-[1.25rem] opacity-0 transition-opacity">
@@ -771,6 +775,51 @@
     let statusFilter = 'ALL';
     let assigneeFilter = 'ALL';
 
+    // ข้อมูลสำรองเริ่มต้นกรณีรอการซิงค์จาก Google Sheets
+    const defaultTasks = [
+      {
+        id: 'task-101',
+        title: 'ออกแบบ Key Visual โปสเตอร์รับสมัครนักศึกษาใหม่ TCAS รอบ 2',
+        category: 'GRAPHIC',
+        priority: 'URGENT',
+        status: 'IN_PROGRESS',
+        deadline: '2026-09-18',
+        assigneeId: 'u_natthawit',
+        desc: 'จัดทำธีมสอดคล้องกับแคมเปญ Discover Your Passion สเปก: 1080x1350px (Instagram/Facebook) และบอร์ดประชาสัมพันธ์',
+        createdAt: '2026-09-08',
+        subtasks: [
+          { text: 'ร่าง Mood & Tone และ Palette โทนสีกรมท่า-ทอง', done: true },
+          { text: 'ดราฟต์เลย์เอาต์รอบแรกและจัดวางข้อความ', done: true },
+          { text: 'ส่งตรวจรอบแก้กับ อ.วรนัย ไชยวงค์ญาติ', done: false }
+        ],
+        notes: [
+          { author: 'ณัฐวิทย์ ชัยพรหมมา', time: '08 ก.ย. 14:20', text: 'ส่งดราฟต์ที่ 1 ลงไดรฟ์เรียบร้อย กำลังปรับขนาดฟอนต์หัวเรื่อง' }
+        ],
+        attachments: []
+      },
+      {
+        id: 'task-102',
+        title: 'ถ่ายทำและตัดต่อวิดีโอสัมภาษณ์ศิษย์เก่าดีเด่น คณะนิติศาสตร์',
+        category: 'VIDEO',
+        priority: 'HIGH',
+        status: 'REVIEW',
+        deadline: '2026-09-15',
+        assigneeId: 'u_theeraphan',
+        desc: 'วิดีโอความยาว 3 นาที สัมภาษณ์ศิษย์เก่าสร้างแรงบันดาลใจให้น้องๆ ม.ปลาย บรรยากาศสวนบัว ม.พายัพ',
+        createdAt: '2026-09-07',
+        subtasks: [
+          { text: 'นัดหมายคิวและสถานที่ถ่ายทำ', done: true },
+          { text: 'บันทึกภาพและเสียงสัมภาษณ์ 4K', done: true },
+          { text: 'ตัดต่อ Rough Cut และเกรดสี', done: true },
+          { text: 'ใส่ Subtitle ภาษาไทย และตรวจคำสะกด', done: true }
+        ],
+        notes: [
+          { author: 'ธีรพันธุ์ ปราบภัย', time: '09 ก.ย. 10:15', text: 'ส่งลิงก์ YouTube Unlisted ให้ฝ่ายบริหารตรวจทานความถูกต้องแล้วครับ' }
+        ],
+        attachments: []
+      }
+    ];
+
     async function callGasApi(payload) {
       try {
         const res = await fetch(GOOGLE_SCRIPT_URL, {
@@ -789,7 +838,7 @@
         const res = await fetch(GOOGLE_SCRIPT_URL);
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data)) {
+          if (Array.isArray(data) && data.length > 0) {
             tasks = data;
             renderAll();
             showToast('ซิงค์ข้อมูลจาก Google Sheets สำเร็จ', 'info');
@@ -799,53 +848,204 @@
       } catch (err) {
         console.warn('Google Sheets fetch warning:', err);
       }
+      if (tasks.length === 0) {
+        tasks = [...defaultTasks];
+      }
       renderAll();
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      const userSelectorSide = document.getElementById('userSelectorSide');
-      if (userSelectorSide) {
-        userSelectorSide.innerHTML = '';
-        TEAM_MEMBERS.forEach(user => {
-          const opt = document.createElement('option');
-          opt.value = user.id;
-          opt.textContent = `${user.name.split(' ')[0]} (${user.isAdmin ? 'Admin' : 'Staff'})`;
-          userSelectorSide.appendChild(opt);
-        });
-        userSelectorSide.value = currentUserId;
+    // --- ระบบตรวจสอบรหัสความปลอดภัย PIN Popup (8 กล่องอินพุตจริง ตอบสนองทันที) ---
+    function openPinModal() {
+      const modal = document.getElementById('pinModal');
+      const container = document.getElementById('pinModalContainer');
+      const errorMsg = document.getElementById('pinErrorMessage');
+      const inputs = document.querySelectorAll('.pin-digit-box');
+
+      inputs.forEach(inp => {
+        inp.value = '';
+        inp.className = 'pin-digit-box w-9 h-12 sm:w-10 sm:h-13 rounded-lg bg-neutral-900 border border-neutral-700 text-center text-lg sm:text-xl text-white font-bold focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition-all';
+      });
+
+      if (errorMsg) {
+        errorMsg.classList.add('opacity-0');
       }
 
-      const filterAssignee = document.getElementById('filterAssignee');
-      filterAssignee.innerHTML = '<option value="ALL">ผู้รับผิดชอบทั้งหมด</option>';
-      TEAM_MEMBERS.forEach(user => {
-        const opt = document.createElement('option');
-        opt.value = user.id;
-        opt.textContent = `${user.name.split(' ')[0]} (@${user.username})`;
-        filterAssignee.appendChild(opt);
-      });
-
-      const taskAssigneeInput = document.getElementById('taskAssigneeInput');
-      taskAssigneeInput.innerHTML = '';
-      TEAM_MEMBERS.forEach(user => {
-        const opt = document.createElement('option');
-        opt.value = user.id;
-        opt.textContent = `${user.name} (@${user.username})`;
-        taskAssigneeInput.appendChild(opt);
-      });
-
-      renderSidebarTeam();
-      updateUserDetails();
-
-      window.addEventListener('keydown', (e) => {
-        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-          e.preventDefault();
-          document.getElementById('searchInput').focus();
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        if (container) container.classList.remove('scale-98');
+        if (inputs.length > 0) {
+          inputs[0].focus();
+          inputs[0].select();
         }
+      }, 50);
+    }
+
+    function closePinModal() {
+      const modal = document.getElementById('pinModal');
+      const container = document.getElementById('pinModalContainer');
+      modal.classList.add('opacity-0');
+      if (container) container.classList.add('scale-98');
+      setTimeout(() => modal.classList.add('hidden'), 150);
+    }
+
+    function initPinInputListeners() {
+      const inputs = document.querySelectorAll('.pin-digit-box');
+      if (!inputs || inputs.length === 0) return;
+
+      inputs.forEach((input, idx) => {
+        // 1. ดักจับการกดแป้นพิมพ์ (Keydown) ตอบสนองทันทีแบบ Real-time
+        input.addEventListener('keydown', (e) => {
+          const errorMsg = document.getElementById('pinErrorMessage');
+          if (errorMsg) errorMsg.classList.add('opacity-0');
+
+          // กรณีพิมพ์ตัวเลข 0-9
+          if (e.key >= '0' && e.key <= '9') {
+            e.preventDefault();
+            input.value = e.key;
+            input.classList.remove('border-neutral-700', 'border-rose-500');
+            input.classList.add('border-neutral-500', 'bg-neutral-800/80');
+
+            if (idx < inputs.length - 1) {
+              inputs[idx + 1].focus();
+              inputs[idx + 1].select();
+            } else {
+              verifyEnteredPin();
+            }
+          } 
+          // กรณีกดปุ่มลบ Backspace
+          else if (e.key === 'Backspace') {
+            e.preventDefault();
+            if (input.value !== '') {
+              input.value = '';
+              input.classList.remove('border-neutral-500', 'bg-neutral-800/80');
+              input.classList.add('border-neutral-700');
+            } else if (idx > 0) {
+              inputs[idx - 1].focus();
+              inputs[idx - 1].value = '';
+              inputs[idx - 1].classList.remove('border-neutral-500', 'bg-neutral-800/80');
+              inputs[idx - 1].classList.add('border-neutral-700');
+            }
+          } 
+          // ปรบลูกศรซ้าย/ขวา
+          else if (e.key === 'ArrowLeft' && idx > 0) {
+            e.preventDefault();
+            inputs[idx - 1].focus();
+          } else if (e.key === 'ArrowRight' && idx < inputs.length - 1) {
+            e.preventDefault();
+            inputs[idx + 1].focus();
+          } else if (e.key === 'Enter') {
+            e.preventDefault();
+            verifyEnteredPin();
+          }
+        });
+
+        // 2. ดักจับ Input Event สำหรับมือถือ/แป้นพิมพ์เสมือน (Virtual Keyboard)
+        input.addEventListener('input', () => {
+          const errorMsg = document.getElementById('pinErrorMessage');
+          if (errorMsg) errorMsg.classList.add('opacity-0');
+
+          const rawVal = input.value.replace(/\D/g, '');
+          if (rawVal.length > 0) {
+            input.value = rawVal.slice(-1);
+            input.classList.remove('border-neutral-700', 'border-rose-500');
+            input.classList.add('border-neutral-500', 'bg-neutral-800/80');
+
+            if (idx < inputs.length - 1) {
+              inputs[idx + 1].focus();
+              inputs[idx + 1].select();
+            } else {
+              verifyEnteredPin();
+            }
+          } else {
+            input.value = '';
+            input.classList.remove('border-neutral-500', 'bg-neutral-800/80');
+            input.classList.add('border-neutral-700');
+          }
+        });
+
+        // 3. รองรับการวางรหัส (Paste) 8 หลักลงในช่องใดก็ได้
+        input.addEventListener('paste', (e) => {
+          e.preventDefault();
+          const clipboardData = (e.clipboardData || window.clipboardData).getData('text');
+          const cleanDigits = clipboardData.replace(/\D/g, '').slice(0, 8);
+          if (!cleanDigits) return;
+
+          const digits = cleanDigits.split('');
+          inputs.forEach((inp, i) => {
+            if (i < digits.length) {
+              inp.value = digits[i];
+              inp.classList.remove('border-neutral-700', 'border-rose-500');
+              inp.classList.add('border-neutral-500', 'bg-neutral-800/80');
+            } else {
+              inp.value = '';
+              inp.classList.remove('border-neutral-500', 'bg-neutral-800/80');
+              inp.classList.add('border-neutral-700');
+            }
+          });
+
+          if (digits.length === 8) {
+            inputs[7].focus();
+            verifyEnteredPin();
+          } else {
+            inputs[Math.min(digits.length, 7)].focus();
+          }
+        });
+
+        input.addEventListener('focus', () => {
+          input.select();
+        });
+      });
+    }
+
+    function verifyEnteredPin() {
+      const inputs = document.querySelectorAll('.pin-digit-box');
+      const container = document.getElementById('pinInputWrapper');
+      const errorMsg = document.getElementById('pinErrorMessage');
+      
+      let fullPin = '';
+      inputs.forEach(inp => {
+        fullPin += inp.value.trim();
       });
 
-      fetchTasksFromHost();
-      initPinInputListeners();
-    });
+      if (fullPin === ADMIN_PASSCODE) {
+        inputs.forEach(inp => {
+          inp.className = 'pin-digit-box w-9 h-12 sm:w-10 sm:h-13 rounded-lg bg-emerald-950/40 border border-emerald-500 text-center text-lg sm:text-xl text-emerald-400 font-bold focus:outline-none transition-all';
+        });
+
+        if (errorMsg) errorMsg.classList.add('opacity-0');
+        showToast('ยืนยันรหัส PIN ถูกต้อง', 'success');
+
+        setTimeout(() => {
+          closePinModal();
+          openTaskModal(null);
+        }, 280);
+      } else {
+        inputs.forEach(inp => {
+          inp.className = 'pin-digit-box w-9 h-12 sm:w-10 sm:h-13 rounded-lg bg-rose-950/40 border border-rose-500 text-center text-lg sm:text-xl text-rose-400 font-bold focus:outline-none transition-all';
+        });
+
+        if (errorMsg) {
+          errorMsg.classList.remove('opacity-0');
+        }
+
+        if (container) {
+          container.classList.remove('shake-animation');
+          void container.offsetWidth;
+          container.classList.add('shake-animation');
+        }
+
+        setTimeout(() => {
+          inputs.forEach(inp => {
+            inp.value = '';
+            inp.className = 'pin-digit-box w-9 h-12 sm:w-10 sm:h-13 rounded-lg bg-neutral-900 border border-neutral-700 text-center text-lg sm:text-xl text-white font-bold focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition-all';
+          });
+          if (inputs.length > 0) {
+            inputs[0].focus();
+          }
+        }, 400);
+      }
+    }
 
     function handleUserChange(userId) {
       currentUserId = userId;
@@ -873,156 +1073,384 @@
       if (sideUserRole) sideUserRole.textContent = user.role;
       if (sideUserPermission) sideUserPermission.textContent = user.isAdmin ? 'Super Admin' : 'Staff Member';
 
-      if (onlyMyTasksFilter) {
-        quickFilterBtn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded border border-cf-blue bg-cf-blue text-white font-medium text-xs transition';
-      } else {
-        quickFilterBtn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded border border-cf-border text-neutral-300 hover:bg-neutral-900 transition text-xs';
+      if (quickFilterBtn) {
+        if (onlyMyTasksFilter) {
+          quickFilterBtn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded border border-cf-blue bg-cf-blue text-white font-medium text-xs transition';
+        } else {
+          quickFilterBtn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded border border-cf-border text-neutral-300 hover:bg-neutral-900 transition text-xs font-sans';
+        }
       }
     }
 
-    // --- ระบบตรวจสอบรหัสความปลอดภัย PIN Popup (8 ช่องสี่เหลี่ยม) ---
-    function openPinModal() {
-      const modal = document.getElementById('pinModal');
-      const container = document.getElementById('pinModalContainer');
-      const inputs = document.querySelectorAll('.pin-digit-box');
-      const errorMsg = document.getElementById('pinErrorMessage');
+    function toggleQuickFilterMyTasks() {
+      onlyMyTasksFilter = !onlyMyTasksFilter;
+      updateUserDetails();
+      renderAll();
+    }
 
-      inputs.forEach(input => {
-        input.value = '';
-        input.classList.remove('border-rose-500', 'border-emerald-500');
-        input.classList.add('border-neutral-700');
+    function renderSidebarTeam() {
+      const container = document.getElementById('sidebarTeamList');
+      if (!container) return;
+      container.innerHTML = '';
+
+      TEAM_MEMBERS.forEach(member => {
+        const count = tasks.filter(t => t.assigneeId === member.id && t.status !== 'DONE').length;
+        const btn = document.createElement('button');
+        btn.onclick = () => {
+          document.getElementById('filterAssignee').value = member.id;
+          applyFilters();
+        };
+        btn.className = 'w-full flex items-center justify-between px-2.5 py-1 rounded text-neutral-400 hover:text-white hover:bg-neutral-900 transition text-left';
+        btn.innerHTML = `
+          <div class="flex items-center gap-1.5 truncate">
+            <span class="w-1.5 h-1.5 rounded-full ${member.isAdmin ? 'bg-amber-400' : 'bg-neutral-500'}"></span>
+            <span class="truncate font-sans text-xs">${member.name.split(' ')[0]}</span>
+          </div>
+          <span class="text-[10px] font-mono text-neutral-500">${count}</span>
+        `;
+        container.appendChild(btn);
+      });
+    }
+
+    function handleSearch(val) {
+      searchQuery = val.trim().toLowerCase();
+      const sInput = document.getElementById('searchInput');
+      const sideSearch = document.getElementById('sidebarSearch');
+      if (sInput && sInput.value !== val) sInput.value = val;
+      if (sideSearch && sideSearch.value !== val) sideSearch.value = val;
+      renderAll();
+    }
+
+    function setSidebarCategory(cat) {
+      categoryFilter = cat;
+      ['ALL', 'GRAPHIC', 'VIDEO', 'PR', 'MARKETING', 'EVENT'].forEach(c => {
+        const el = document.getElementById(`nav-cat-${c}`);
+        if (el) {
+          if (c === cat) {
+            el.className = 'w-full flex items-center justify-between px-2.5 py-1.5 rounded bg-neutral-900/80 text-white font-medium border border-neutral-800 text-left';
+          } else {
+            el.className = 'w-full flex items-center justify-between px-2.5 py-1.5 rounded text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/50 transition text-left';
+          }
+        }
+      });
+      renderAll();
+    }
+
+    function applyFilters() {
+      statusFilter = document.getElementById('filterStatus').value;
+      priorityFilter = document.getElementById('filterPriority').value;
+      assigneeFilter = document.getElementById('filterAssignee').value;
+      renderAll();
+    }
+
+    function resetFilters() {
+      const sInput = document.getElementById('searchInput');
+      const sideSearch = document.getElementById('sidebarSearch');
+      if (sInput) sInput.value = '';
+      if (sideSearch) sideSearch.value = '';
+      document.getElementById('filterStatus').value = 'ALL';
+      document.getElementById('filterPriority').value = 'ALL';
+      document.getElementById('filterAssignee').value = 'ALL';
+      searchQuery = '';
+      categoryFilter = 'ALL';
+      statusFilter = 'ALL';
+      priorityFilter = 'ALL';
+      assigneeFilter = 'ALL';
+      onlyMyTasksFilter = false;
+      setSidebarCategory('ALL');
+      updateUserDetails();
+      renderAll();
+      showToast('รีเซ็ตตัวกรองทั้งหมดแล้ว', 'info');
+    }
+
+    function getFilteredTasks() {
+      return tasks.filter(task => {
+        if (onlyMyTasksFilter && task.assigneeId !== currentUserId) return false;
+        if (categoryFilter !== 'ALL' && task.category !== categoryFilter) return false;
+        if (statusFilter !== 'ALL' && task.status !== statusFilter) return false;
+        if (priorityFilter !== 'ALL' && task.priority !== priorityFilter) return false;
+        if (assigneeFilter !== 'ALL' && task.assigneeId !== assigneeFilter) return false;
+
+        if (searchQuery) {
+          const assignee = TEAM_MEMBERS.find(m => m.id === task.assigneeId);
+          const assigneeName = assignee ? assignee.name.toLowerCase() : '';
+          const matchTitle = (task.title || '').toLowerCase().includes(searchQuery);
+          const matchDesc = (task.desc || '').toLowerCase().includes(searchQuery);
+          const matchAssignee = assigneeName.includes(searchQuery);
+          if (!matchTitle && !matchDesc && !matchAssignee) return false;
+        }
+
+        return true;
+      });
+    }
+
+    function renderStats(filteredList) {
+      const total = tasks.length;
+      const inProgress = tasks.filter(t => t.status === 'IN_PROGRESS').length;
+      const review = tasks.filter(t => t.status === 'REVIEW').length;
+      const done = tasks.filter(t => t.status === 'DONE').length;
+
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statInProgress').textContent = inProgress;
+      document.getElementById('statReview').textContent = review;
+      document.getElementById('statCompleted').textContent = done;
+
+      document.getElementById('statProgressRatio').textContent = `${done} / ${total}`;
+      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+      document.getElementById('statProgressBar').style.width = `${pct}%`;
+
+      const navCountAll = document.getElementById('navCountAll');
+      if (navCountAll) navCountAll.textContent = total;
+
+      const tagContainer = document.getElementById('activeFilterTags');
+      tagContainer.innerHTML = '';
+      const tags = [];
+      if (onlyMyTasksFilter) tags.push('เฉพาะงานของฉัน');
+      if (categoryFilter !== 'ALL') tags.push(`หมวด: ${CATEGORIES[categoryFilter]?.label}`);
+      if (statusFilter !== 'ALL') tags.push(`สถานะ: ${STATUSES[statusFilter]?.label}`);
+      if (priorityFilter !== 'ALL') tags.push(`ความสำคัญ: ${PRIORITIES[priorityFilter]?.label}`);
+      if (assigneeFilter !== 'ALL') {
+        const m = TEAM_MEMBERS.find(u => u.id === assigneeFilter);
+        tags.push(`ผู้รับผิดชอบ: @${m?.username}`);
+      }
+      if (searchQuery) tags.push(`"${searchQuery}"`);
+
+      if (tags.length > 0) {
+        tagContainer.innerHTML = '<span class="text-neutral-500 font-mono text-[10px]">ACTIVE FILTERS:</span>';
+        tags.forEach(t => {
+          const span = document.createElement('span');
+          span.className = 'bg-neutral-900 text-neutral-300 font-mono text-[10px] px-2 py-0.5 rounded border border-neutral-800 flex items-center gap-1';
+          span.textContent = t;
+          tagContainer.appendChild(span);
+        });
+      }
+
+      document.getElementById('paginationInfo').textContent = `Showing 1-${filteredList.length} of ${filteredList.length}`;
+    }
+
+    function switchView(mode) {
+      currentViewMode = mode;
+      const listView = document.getElementById('listViewSection');
+      const kanbanView = document.getElementById('kanbanViewSection');
+      const listBtn = document.getElementById('viewListBtn');
+      const kanbanBtn = document.getElementById('viewKanbanBtn');
+
+      if (mode === 'list') {
+        listView.classList.remove('hidden');
+        kanbanView.classList.add('hidden');
+        listBtn.className = 'px-2 py-1 rounded text-xs text-white bg-neutral-800';
+        kanbanBtn.className = 'px-2 py-1 rounded text-xs text-neutral-400 hover:text-white';
+      } else {
+        listView.classList.add('hidden');
+        kanbanView.classList.remove('hidden');
+        kanbanBtn.className = 'px-2 py-1 rounded text-xs text-white bg-neutral-800';
+        listBtn.className = 'px-2 py-1 rounded text-xs text-neutral-400 hover:text-white';
+      }
+      renderAll();
+    }
+
+    function renderList(tasksToRender) {
+      const container = document.getElementById('taskListContainer');
+      const emptyState = document.getElementById('emptyListState');
+      container.innerHTML = '';
+
+      if (tasksToRender.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      emptyState.classList.add('hidden');
+
+      tasksToRender.forEach(task => {
+        const isMine = task.assigneeId === currentUserId;
+        const assignee = TEAM_MEMBERS.find(m => m.id === task.assigneeId) || { name: 'ยังไม่ระบุ', username: 'unassigned' };
+        const category = CATEGORIES[task.category] || { label: task.category, slug: 'general', icon: 'ph-app-window' };
+        const priority = PRIORITIES[task.priority] || PRIORITIES.NORMAL;
+        const status = STATUSES[task.status] || STATUSES.TODO;
+
+        const totalSub = task.subtasks ? task.subtasks.length : 0;
+        const doneSub = task.subtasks ? task.subtasks.filter(s => s.done).length : 0;
+
+        const card = document.createElement('div');
+        card.className = `bg-cf-card hover:bg-cf-cardHover border ${isMine ? 'border-cf-blue/70 ring-1 ring-cf-blue/30' : 'border-cf-border'} rounded-lg p-3.5 transition group cursor-pointer space-y-2.5`;
+        card.onclick = () => openViewModal(task.id);
+
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-start gap-3 min-w-0 flex-1">
+              <div class="w-8 h-8 rounded bg-neutral-900 border border-neutral-800 text-cf-blue flex items-center justify-center shrink-0 mt-0.5 group-hover:border-cf-blue/50 transition">
+                <i class="ph-bold ${category.icon} text-base"></i>
+              </div>
+
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-2 mb-2">
+                  <h3 class="font-bold text-white text-sm leading-relaxed break-words group-hover:text-cf-blue transition">
+                    ${escapeHtml(task.title)}
+                  </h3>
+                  ${isMine ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-cf-blue/20 text-cf-blue border border-cf-blue/40 shrink-0">ASSIGNED TO YOU</span>' : ''}
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2 text-xs text-neutral-400 font-mono text-[11px] pt-1">
+                  <span class="text-neutral-400 font-sans">${category.label}</span>
+                  <span>&bull;</span>
+                  <span class="text-neutral-400">@${assignee.username}</span>
+                  <span>&bull;</span>
+                  <span class="${isDeadlineNear(task.deadline) && task.status !== 'DONE' ? 'text-rose-400 font-semibold' : 'text-neutral-500'}">
+                    Due: ${task.deadline}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-neutral-800 bg-neutral-950 text-neutral-300 font-mono text-[11px]">
+                <i class="ph-bold ph-user-circle text-neutral-500"></i>
+                <span>${assignee.username}</span>
+              </span>
+
+              <span class="px-2 py-0.5 rounded text-[11px] font-mono border ${priority.badge}">
+                ${priority.label}
+              </span>
+
+              <span class="px-2 py-0.5 rounded text-[11px] font-mono border ${status.badge}">
+                ${status.label}
+              </span>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-cf-border/80 flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-400 font-mono text-[11px]">
+            <div class="flex items-center gap-1.5 truncate max-w-xl text-neutral-400">
+              <i class="ph-bold ph-git-commit text-neutral-500 shrink-0"></i>
+              <span class="truncate font-sans text-neutral-300">${escapeHtml(task.notes && task.notes.length > 0 ? task.notes[0].text : (task.desc || 'ไม่มีบันทึกล่าสุด'))}</span>
+            </div>
+
+            ${totalSub > 0 ? `
+              <div class="flex items-center gap-2 shrink-0 text-neutral-400">
+                <i class="ph-bold ph-check-square"></i>
+                <span>${doneSub}/${totalSub} tasks</span>
+              </div>
+            ` : `
+              <div class="text-neutral-500 text-[10px]">
+                created: ${task.createdAt || 'recent'}
+              </div>
+            `}
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function renderKanban(tasksToRender) {
+      const cols = {
+        TODO: document.getElementById('col-TODO'),
+        IN_PROGRESS: document.getElementById('col-IN_PROGRESS'),
+        REVIEW: document.getElementById('col-REVIEW'),
+        DONE: document.getElementById('col-DONE')
+      };
+
+      Object.keys(cols).forEach(k => {
+        cols[k].innerHTML = '';
+        document.getElementById(`count-${k}`).textContent = '0';
       });
 
-      if (errorMsg) {
-        errorMsg.classList.add('opacity-0');
+      const counts = { TODO: 0, IN_PROGRESS: 0, REVIEW: 0, DONE: 0 };
+
+      tasksToRender.forEach(task => {
+        const targetCol = cols[task.status] || cols.TODO;
+        counts[task.status] = (counts[task.status] || 0) + 1;
+
+        const isMine = task.assigneeId === currentUserId;
+        const assignee = TEAM_MEMBERS.find(m => m.id === task.assigneeId) || { name: '?', username: 'unassigned' };
+        const category = CATEGORIES[task.category] || { label: task.category };
+        const priority = PRIORITIES[task.priority] || PRIORITIES.NORMAL;
+
+        const card = document.createElement('div');
+        card.className = `bg-cf-card hover:bg-cf-cardHover border ${isMine ? 'border-cf-blue/70 ring-1 ring-cf-blue/30' : 'border-cf-border'} rounded p-3 text-xs space-y-2 cursor-pointer transition`;
+        card.onclick = () => openViewModal(task.id);
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between text-[10px] font-mono">
+            <span class="text-neutral-500">${category.label}</span>
+            <span class="px-1.5 py-0.5 rounded border ${priority.badge}">${priority.label}</span>
+          </div>
+          <div class="font-medium text-white leading-snug">
+            ${escapeHtml(task.title)}
+          </div>
+          <div class="pt-1.5 border-t border-cf-border flex items-center justify-between text-[11px] font-mono text-neutral-400">
+            <span class="text-neutral-300 truncate">@${assignee.username}</span>
+            <span class="${isDeadlineNear(task.deadline) && task.status !== 'DONE' ? 'text-rose-400 font-semibold' : 'text-neutral-500'}">${task.deadline}</span>
+          </div>
+        `;
+
+        targetCol.appendChild(card);
+      });
+
+      Object.keys(counts).forEach(k => {
+        const el = document.getElementById(`count-${k}`);
+        if (el) el.textContent = counts[k];
+      });
+    }
+
+    function renderAll() {
+      const filtered = getFilteredTasks();
+      renderStats(filtered);
+      renderSidebarTeam();
+      if (currentViewMode === 'list') {
+        renderList(filtered);
+      } else {
+        renderKanban(filtered);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const userSelectorSide = document.getElementById('userSelectorSide');
+      if (userSelectorSide) {
+        userSelectorSide.innerHTML = '';
+        TEAM_MEMBERS.forEach(user => {
+          const opt = document.createElement('option');
+          opt.value = user.id;
+          opt.textContent = `${user.name.split(' ')[0]} (${user.isAdmin ? 'Admin' : 'Staff'})`;
+          userSelectorSide.appendChild(opt);
+        });
+        userSelectorSide.value = currentUserId;
       }
 
-      modal.classList.remove('hidden');
-      setTimeout(() => {
-        modal.classList.remove('opacity-0');
-        container.classList.remove('scale-98');
-        if (inputs.length > 0) inputs[0].focus();
-      }, 10);
-    }
-
-    function closePinModal() {
-      const modal = document.getElementById('pinModal');
-      const container = document.getElementById('pinModalContainer');
-      modal.classList.add('opacity-0');
-      container.classList.add('scale-98');
-      setTimeout(() => modal.classList.add('hidden'), 150);
-    }
-
-    function initPinInputListeners() {
-      const inputs = document.querySelectorAll('.pin-digit-box');
-
-      inputs.forEach((input, index) => {
-        // เมื่อพิมพ์ตัวเลข
-        input.addEventListener('input', (e) => {
-          const val = e.target.value;
-          
-          // รับเฉพาะตัวเลข
-          if (!/^\d*$/.test(val)) {
-            e.target.value = '';
-            return;
-          }
-
-          if (val.length >= 1) {
-            e.target.value = val.slice(-1);
-            // โฟกัสช่องถัดไป
-            if (index < inputs.length - 1) {
-              inputs[index + 1].focus();
-            }
-          }
-
-          // เมื่อกรอกครบ 8 ช่องแล้ว ตรวจสอบอัตโนมัติ
-          const fullPin = Array.from(inputs).map(i => i.value).join('');
-          if (fullPin.length === 8) {
-            verifyEnteredPin();
-          }
+      const filterAssignee = document.getElementById('filterAssignee');
+      if (filterAssignee) {
+        filterAssignee.innerHTML = '<option value="ALL">ผู้รับผิดชอบทั้งหมด</option>';
+        TEAM_MEMBERS.forEach(user => {
+          const opt = document.createElement('option');
+          opt.value = user.id;
+          opt.textContent = `${user.name.split(' ')[0]} (@${user.username})`;
+          filterAssignee.appendChild(opt);
         });
+      }
 
-        // เมื่อกด Backspace หรือลูกศรซ้ายขวา
-        input.addEventListener('keydown', (e) => {
-          if (e.key === 'Backspace') {
-            if (!input.value && index > 0) {
-              inputs[index - 1].focus();
-            }
-          } else if (e.key === 'ArrowLeft' && index > 0) {
-            inputs[index - 1].focus();
-          } else if (e.key === 'ArrowRight' && index < inputs.length - 1) {
-            inputs[index + 1].focus();
-          } else if (e.key === 'Enter') {
-            verifyEnteredPin();
-          }
+      const taskAssigneeInput = document.getElementById('taskAssigneeInput');
+      if (taskAssigneeInput) {
+        taskAssigneeInput.innerHTML = '';
+        TEAM_MEMBERS.forEach(user => {
+          const opt = document.createElement('option');
+          opt.value = user.id;
+          opt.textContent = `${user.name} (@${user.username})`;
+          taskAssigneeInput.appendChild(opt);
         });
+      }
 
-        // รองรับการ Copy & Paste รหัส 8 หลักลงในช่อง
-        input.addEventListener('paste', (e) => {
+      renderSidebarTeam();
+      updateUserDetails();
+      initPinInputListeners();
+
+      window.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
           e.preventDefault();
-          const pastedData = (e.clipboardData || window.clipboardData).getData('text').trim();
-          const digits = pastedData.replace(/\D/g, '').slice(0, 8);
-          
-          if (digits.length > 0) {
-            digits.split('').forEach((d, i) => {
-              if (inputs[i]) inputs[i].value = d;
-            });
-
-            if (digits.length < 8 && inputs[digits.length]) {
-              inputs[digits.length].focus();
-            } else if (inputs[7]) {
-              inputs[7].focus();
-            }
-
-            if (digits.length === 8) {
-              verifyEnteredPin();
-            }
-          }
-        });
+          const s = document.getElementById('searchInput');
+          if (s) s.focus();
+        }
       });
-    }
 
-    function verifyEnteredPin() {
-      const inputs = document.querySelectorAll('.pin-digit-box');
-      const container = document.getElementById('pinInputWrapper');
-      const errorMsg = document.getElementById('pinErrorMessage');
-      const fullPin = Array.from(inputs).map(i => i.value).join('');
-
-      if (fullPin === ADMIN_PASSCODE) {
-        inputs.forEach(i => {
-          i.classList.remove('border-neutral-700', 'border-rose-500');
-          i.classList.add('border-emerald-500');
-        });
-
-        if (errorMsg) errorMsg.classList.add('opacity-0');
-
-        showToast('ยืนยันรหัส PIN ถูกต้อง', 'success');
-
-        setTimeout(() => {
-          closePinModal();
-          openTaskModal(null);
-        }, 300);
-      } else {
-        // หากผิดพลาด
-        inputs.forEach(i => {
-          i.classList.remove('border-neutral-700', 'border-emerald-500');
-          i.classList.add('border-rose-500');
-          i.value = '';
-        });
-
-        if (errorMsg) {
-          errorMsg.classList.remove('opacity-0');
-        }
-
-        if (container) {
-          container.classList.remove('shake-animation');
-          void container.offsetWidth; // บังคับ Trigger reflow
-          container.classList.add('shake-animation');
-        }
-
-        if (inputs.length > 0) inputs[0].focus();
-      }
-    }
+      fetchTasksFromHost();
+    });
 
     function openTaskModal(taskId = null) {
       const modal = document.getElementById('taskModal');
