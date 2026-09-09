@@ -61,6 +61,17 @@
     .cf-border {
       border: 1px solid #222226;
     }
+    @keyframes pinShake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+    .shake-animation {
+      animation: pinShake 0.35s ease-in-out;
+    }
+    .pin-box {
+      -webkit-text-security: disc;
+    }
   </style>
 </head>
 <body class="bg-cf-black font-sans text-neutral-200 antialiased min-h-screen flex flex-col selection:bg-cf-blue selection:text-white">
@@ -194,7 +205,7 @@
 
         <!-- Primary Create Action Button -->
         <div class="flex items-center gap-2">
-          <button id="btnOpenCreateTask" onclick="openTaskModal()" class="bg-cf-blue hover:bg-cf-blueHover text-white font-medium px-3.5 py-2 rounded-md text-xs sm:text-sm flex items-center gap-1.5 transition active:scale-[0.98] shadow-sm">
+          <button id="btnOpenCreateTask" onclick="openPinModal()" class="bg-cf-blue hover:bg-cf-blueHover text-white font-medium px-3.5 py-2 rounded-md text-xs sm:text-sm flex items-center gap-1.5 transition active:scale-[0.98] shadow-sm">
             <i class="ph-bold ph-plus"></i>
             <span>มอบหมายงานใหม่</span>
           </button>
@@ -481,25 +492,6 @@
           <textarea id="taskDescInput" rows="3" placeholder="ระบุเป้าหมาย ลิงก์ไดรฟ์ ขนาดชิ้นงาน หรือข้อกำหนด..." class="w-full px-3 py-2 rounded bg-neutral-900 border border-cf-border text-white placeholder-neutral-600 focus:outline-none focus:border-cf-blue font-sans"></textarea>
         </div>
 
-        <!-- Passcode Verification Box (บังคับใส่สำหรับการมอบหมายงานใหม่) -->
-        <div id="passcodeContainer" class="p-3 bg-neutral-900/80 border border-amber-900/60 rounded-md space-y-2">
-          <div class="flex items-center justify-between">
-            <label class="block font-medium text-amber-300 font-mono text-[11px] flex items-center gap-1.5" for="taskPasscodeInput">
-              <i class="ph-bold ph-key text-amber-400"></i> รหัสความปลอดภัยสำหรับมอบหมายงาน (Passcode) <span class="text-rose-400">*</span>
-            </label>
-            <span class="text-[10px] text-neutral-500 font-mono">ยืนยันสิทธิ์แอดมิน</span>
-          </div>
-          <div class="relative">
-            <input type="password" id="taskPasscodeInput" placeholder="กรอกรหัส Passcode เพื่อยืนยันการมอบหมายงาน" class="w-full pl-3 pr-10 py-2 rounded bg-neutral-950 border border-cf-border text-white placeholder-neutral-600 focus:outline-none focus:border-amber-400 font-mono text-xs tracking-wider">
-            <button type="button" onclick="togglePasscodeVisibility()" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white transition p-1 text-sm" title="แสดง/ซ่อนรหัสผ่าน">
-              <i class="ph-bold ph-eye" id="passcodeToggleIcon"></i>
-            </button>
-          </div>
-          <div id="passcodeFeedback" class="text-[10px] text-neutral-500 font-mono">
-            ระบบป้องกันการสั่งงานหรือมอบหมายงานโดยไม่ได้รับอนุญาต
-          </div>
-        </div>
-
         <!-- Google Drive File & Link Attachment Area -->
         <div class="p-3 bg-neutral-900/60 border border-cf-border rounded-md space-y-3">
           <div class="flex items-center justify-between border-b border-neutral-800 pb-1.5">
@@ -682,6 +674,54 @@
     </div>
   </div>
 
+  <!-- Security PIN Modal (ป๊อปอัปยืนยันรหัส 8 ช่องสำหรับมอบหมายงานใหม่) -->
+  <div id="pinModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 hidden opacity-0 transition-opacity duration-150">
+    <div class="bg-neutral-950 rounded-xl max-w-md w-full border border-cf-border shadow-2xl p-6 flex flex-col items-center text-center transform transition-transform duration-150 scale-98 space-y-4" id="pinModalContainer">
+      
+      <div class="w-12 h-12 rounded-full bg-cf-blue/15 border border-cf-blue/40 text-cf-blue flex items-center justify-center text-2xl shadow-inner">
+        <i class="ph-bold ph-shield-check"></i>
+      </div>
+
+      <div class="space-y-1">
+        <h3 class="text-base font-bold text-white tracking-tight">ยืนยันรหัสความปลอดภัย (Security PIN)</h3>
+        <p class="text-xs text-neutral-400">กรุณาระบุรหัส PIN 8 หลักเพื่อเข้าสู่ระบบมอบหมายงานใหม่</p>
+      </div>
+
+      <!-- 8-Digit PIN Input Grid -->
+      <div id="pinInputWrapper" class="pt-2">
+        <div class="flex items-center justify-center gap-1.5 sm:gap-2">
+          <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-box pin-box w-9 h-12 sm:w-10 sm:h-13 text-center text-xl sm:text-2xl font-bold bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition" data-index="0" autofocus autocomplete="off">
+          <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-box pin-box w-9 h-12 sm:w-10 sm:h-13 text-center text-xl sm:text-2xl font-bold bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition" data-index="1" autocomplete="off">
+          <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-box pin-box w-9 h-12 sm:w-10 sm:h-13 text-center text-xl sm:text-2xl font-bold bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition" data-index="2" autocomplete="off">
+          <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-box pin-box w-9 h-12 sm:w-10 sm:h-13 text-center text-xl sm:text-2xl font-bold bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition" data-index="3" autocomplete="off">
+          <span class="text-neutral-600 font-mono text-xs px-0.5">-</span>
+          <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-box pin-box w-9 h-12 sm:w-10 sm:h-13 text-center text-xl sm:text-2xl font-bold bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition" data-index="4" autocomplete="off">
+          <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-box pin-box w-9 h-12 sm:w-10 sm:h-13 text-center text-xl sm:text-2xl font-bold bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition" data-index="5" autocomplete="off">
+          <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-box pin-box w-9 h-12 sm:w-10 sm:h-13 text-center text-xl sm:text-2xl font-bold bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition" data-index="6" autocomplete="off">
+          <input type="password" inputmode="numeric" maxlength="1" class="pin-digit-box pin-box w-9 h-12 sm:w-10 sm:h-13 text-center text-xl sm:text-2xl font-bold bg-neutral-900 border border-neutral-700 rounded-lg text-white focus:outline-none focus:border-cf-blue focus:ring-1 focus:ring-cf-blue transition" data-index="7" autocomplete="off">
+        </div>
+
+        <div id="pinErrorMessage" class="text-xs text-rose-400 font-mono font-medium mt-3 min-h-[1.25rem] opacity-0 transition-opacity">
+          รหัส PIN ไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 w-full pt-1">
+        <button type="button" onclick="closePinModal()" class="flex-1 py-2 px-3 rounded-md border border-cf-border hover:bg-neutral-900 text-neutral-400 hover:text-white text-xs font-medium transition">
+          ยกเลิก
+        </button>
+        <button type="button" onclick="verifyEnteredPin()" class="flex-1 py-2 px-3 rounded-md bg-cf-blue hover:bg-cf-blueHover text-white text-xs font-medium transition shadow-sm flex items-center justify-center gap-1.5">
+          <i class="ph-bold ph-key"></i> ยืนยันรหัส
+        </button>
+      </div>
+
+      <div class="text-[10px] text-neutral-500 font-mono">
+        รองรับการกดลบ (Backspace) และการวางรหัส (Paste) 8 หลัก
+      </div>
+
+    </div>
+  </div>
+
   <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2 pointer-events-none"></div>
 
   <script>
@@ -804,6 +844,7 @@
       });
 
       fetchTasksFromHost();
+      initPinInputListeners();
     });
 
     function handleUserChange(userId) {
@@ -839,337 +880,147 @@
       }
     }
 
-    function toggleQuickFilterMyTasks() {
-      onlyMyTasksFilter = !onlyMyTasksFilter;
-      updateUserDetails();
-      renderAll();
-    }
+    // --- ระบบตรวจสอบรหัสความปลอดภัย PIN Popup (8 ช่องสี่เหลี่ยม) ---
+    function openPinModal() {
+      const modal = document.getElementById('pinModal');
+      const container = document.getElementById('pinModalContainer');
+      const inputs = document.querySelectorAll('.pin-digit-box');
+      const errorMsg = document.getElementById('pinErrorMessage');
 
-    function renderSidebarTeam() {
-      const container = document.getElementById('sidebarTeamList');
-      if (!container) return;
-      container.innerHTML = '';
-
-      TEAM_MEMBERS.forEach(member => {
-        const count = tasks.filter(t => t.assigneeId === member.id && t.status !== 'DONE').length;
-        const btn = document.createElement('button');
-        btn.onclick = () => {
-          document.getElementById('filterAssignee').value = member.id;
-          applyFilters();
-        };
-        btn.className = 'w-full flex items-center justify-between px-2.5 py-1 rounded text-neutral-400 hover:text-white hover:bg-neutral-900 transition text-left';
-        btn.innerHTML = `
-          <div class="flex items-center gap-1.5 truncate">
-            <span class="w-1.5 h-1.5 rounded-full ${member.isAdmin ? 'bg-amber-400' : 'bg-neutral-500'}"></span>
-            <span class="truncate font-sans text-xs">${member.name.split(' ')[0]}</span>
-          </div>
-          <span class="text-[10px] font-mono text-neutral-500">${count}</span>
-        `;
-        container.appendChild(btn);
+      inputs.forEach(input => {
+        input.value = '';
+        input.classList.remove('border-rose-500', 'border-emerald-500');
+        input.classList.add('border-neutral-700');
       });
+
+      if (errorMsg) {
+        errorMsg.classList.add('opacity-0');
+      }
+
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        container.classList.remove('scale-98');
+        if (inputs.length > 0) inputs[0].focus();
+      }, 10);
     }
 
-    function handleSearch(val) {
-      searchQuery = val.trim().toLowerCase();
-      document.getElementById('searchInput').value = val;
-      renderAll();
+    function closePinModal() {
+      const modal = document.getElementById('pinModal');
+      const container = document.getElementById('pinModalContainer');
+      modal.classList.add('opacity-0');
+      container.classList.add('scale-98');
+      setTimeout(() => modal.classList.add('hidden'), 150);
     }
 
-    function setSidebarCategory(cat) {
-      categoryFilter = cat;
-      ['ALL', 'GRAPHIC', 'VIDEO', 'PR', 'MARKETING', 'EVENT'].forEach(c => {
-        const el = document.getElementById(`nav-cat-${c}`);
-        if (el) {
-          if (c === cat) {
-            el.className = 'w-full flex items-center justify-between px-2.5 py-1.5 rounded bg-neutral-900 text-white font-medium border border-neutral-800 text-left';
-          } else {
-            el.className = 'w-full flex items-center justify-between px-2.5 py-1.5 rounded text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/50 transition text-left';
+    function initPinInputListeners() {
+      const inputs = document.querySelectorAll('.pin-digit-box');
+
+      inputs.forEach((input, index) => {
+        // เมื่อพิมพ์ตัวเลข
+        input.addEventListener('input', (e) => {
+          const val = e.target.value;
+          
+          // รับเฉพาะตัวเลข
+          if (!/^\d*$/.test(val)) {
+            e.target.value = '';
+            return;
           }
-        }
-      });
-      renderAll();
-    }
 
-    function applyFilters() {
-      statusFilter = document.getElementById('filterStatus').value;
-      priorityFilter = document.getElementById('filterPriority').value;
-      assigneeFilter = document.getElementById('filterAssignee').value;
-      renderAll();
-    }
+          if (val.length >= 1) {
+            e.target.value = val.slice(-1);
+            // โฟกัสช่องถัดไป
+            if (index < inputs.length - 1) {
+              inputs[index + 1].focus();
+            }
+          }
 
-    function resetFilters() {
-      document.getElementById('searchInput').value = '';
-      document.getElementById('sidebarSearch').value = '';
-      document.getElementById('filterStatus').value = 'ALL';
-      document.getElementById('filterPriority').value = 'ALL';
-      document.getElementById('filterAssignee').value = 'ALL';
-      searchQuery = '';
-      categoryFilter = 'ALL';
-      statusFilter = 'ALL';
-      priorityFilter = 'ALL';
-      assigneeFilter = 'ALL';
-      onlyMyTasksFilter = false;
-      setSidebarCategory('ALL');
-      updateUserDetails();
-      renderAll();
-      showToast('รีเซ็ตตัวกรองทั้งหมดแล้ว', 'info');
-    }
-
-    function getFilteredTasks() {
-      return tasks.filter(task => {
-        if (onlyMyTasksFilter && task.assigneeId !== currentUserId) return false;
-        if (categoryFilter !== 'ALL' && task.category !== categoryFilter) return false;
-        if (statusFilter !== 'ALL' && task.status !== statusFilter) return false;
-        if (priorityFilter !== 'ALL' && task.priority !== priorityFilter) return false;
-        if (assigneeFilter !== 'ALL' && task.assigneeId !== assigneeFilter) return false;
-
-        if (searchQuery) {
-          const assignee = TEAM_MEMBERS.find(m => m.id === task.assigneeId);
-          const assigneeName = assignee ? assignee.name.toLowerCase() : '';
-          const matchTitle = (task.title || '').toLowerCase().includes(searchQuery);
-          const matchDesc = (task.desc || '').toLowerCase().includes(searchQuery);
-          const matchAssignee = assigneeName.includes(searchQuery);
-          if (!matchTitle && !matchDesc && !matchAssignee) return false;
-        }
-
-        return true;
-      });
-    }
-
-    function renderStats(filteredList) {
-      const total = tasks.length;
-      const inProgress = tasks.filter(t => t.status === 'IN_PROGRESS').length;
-      const review = tasks.filter(t => t.status === 'REVIEW').length;
-      const done = tasks.filter(t => t.status === 'DONE').length;
-
-      document.getElementById('statTotal').textContent = total;
-      document.getElementById('statInProgress').textContent = inProgress;
-      document.getElementById('statReview').textContent = review;
-      document.getElementById('statCompleted').textContent = done;
-
-      document.getElementById('statProgressRatio').textContent = `${done} / ${total}`;
-      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-      document.getElementById('statProgressBar').style.width = `${pct}%`;
-
-      const navCountAll = document.getElementById('navCountAll');
-      if (navCountAll) navCountAll.textContent = total;
-
-      const tagContainer = document.getElementById('activeFilterTags');
-      tagContainer.innerHTML = '';
-      const tags = [];
-      if (onlyMyTasksFilter) tags.push('เฉพาะงานของฉัน');
-      if (categoryFilter !== 'ALL') tags.push(`หมวด: ${CATEGORIES[categoryFilter]?.label}`);
-      if (statusFilter !== 'ALL') tags.push(`สถานะ: ${STATUSES[statusFilter]?.label}`);
-      if (priorityFilter !== 'ALL') tags.push(`ความสำคัญ: ${PRIORITIES[priorityFilter]?.label}`);
-      if (assigneeFilter !== 'ALL') {
-        const m = TEAM_MEMBERS.find(u => u.id === assigneeFilter);
-        tags.push(`ผู้รับผิดชอบ: @${m?.username}`);
-      }
-      if (searchQuery) tags.push(`"${searchQuery}"`);
-
-      if (tags.length > 0) {
-        tagContainer.innerHTML = '<span class="text-neutral-500 font-mono text-[10px]">ACTIVE FILTERS:</span>';
-        tags.forEach(t => {
-          const span = document.createElement('span');
-          span.className = 'bg-neutral-900 text-neutral-300 font-mono text-[10px] px-2 py-0.5 rounded border border-neutral-800 flex items-center gap-1';
-          span.textContent = t;
-          tagContainer.appendChild(span);
+          // เมื่อกรอกครบ 8 ช่องแล้ว ตรวจสอบอัตโนมัติ
+          const fullPin = Array.from(inputs).map(i => i.value).join('');
+          if (fullPin.length === 8) {
+            verifyEnteredPin();
+          }
         });
-      }
 
-      document.getElementById('paginationInfo').textContent = `Showing 1-${filteredList.length} of ${filteredList.length}`;
+        // เมื่อกด Backspace หรือลูกศรซ้ายขวา
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Backspace') {
+            if (!input.value && index > 0) {
+              inputs[index - 1].focus();
+            }
+          } else if (e.key === 'ArrowLeft' && index > 0) {
+            inputs[index - 1].focus();
+          } else if (e.key === 'ArrowRight' && index < inputs.length - 1) {
+            inputs[index + 1].focus();
+          } else if (e.key === 'Enter') {
+            verifyEnteredPin();
+          }
+        });
+
+        // รองรับการ Copy & Paste รหัส 8 หลักลงในช่อง
+        input.addEventListener('paste', (e) => {
+          e.preventDefault();
+          const pastedData = (e.clipboardData || window.clipboardData).getData('text').trim();
+          const digits = pastedData.replace(/\D/g, '').slice(0, 8);
+          
+          if (digits.length > 0) {
+            digits.split('').forEach((d, i) => {
+              if (inputs[i]) inputs[i].value = d;
+            });
+
+            if (digits.length < 8 && inputs[digits.length]) {
+              inputs[digits.length].focus();
+            } else if (inputs[7]) {
+              inputs[7].focus();
+            }
+
+            if (digits.length === 8) {
+              verifyEnteredPin();
+            }
+          }
+        });
+      });
     }
 
-    function switchView(mode) {
-      currentViewMode = mode;
-      const listView = document.getElementById('listViewSection');
-      const kanbanView = document.getElementById('kanbanViewSection');
-      const listBtn = document.getElementById('viewListBtn');
-      const kanbanBtn = document.getElementById('viewKanbanBtn');
+    function verifyEnteredPin() {
+      const inputs = document.querySelectorAll('.pin-digit-box');
+      const container = document.getElementById('pinInputWrapper');
+      const errorMsg = document.getElementById('pinErrorMessage');
+      const fullPin = Array.from(inputs).map(i => i.value).join('');
 
-      if (mode === 'list') {
-        listView.classList.remove('hidden');
-        kanbanView.classList.add('hidden');
-        listBtn.className = 'px-2 py-1 rounded text-xs text-white bg-neutral-800';
-        kanbanBtn.className = 'px-2 py-1 rounded text-xs text-neutral-400 hover:text-white';
+      if (fullPin === ADMIN_PASSCODE) {
+        inputs.forEach(i => {
+          i.classList.remove('border-neutral-700', 'border-rose-500');
+          i.classList.add('border-emerald-500');
+        });
+
+        if (errorMsg) errorMsg.classList.add('opacity-0');
+
+        showToast('ยืนยันรหัส PIN ถูกต้อง', 'success');
+
+        setTimeout(() => {
+          closePinModal();
+          openTaskModal(null);
+        }, 300);
       } else {
-        listView.classList.add('hidden');
-        kanbanView.classList.remove('hidden');
-        kanbanBtn.className = 'px-2 py-1 rounded text-xs text-white bg-neutral-800';
-        listBtn.className = 'px-2 py-1 rounded text-xs text-neutral-400 hover:text-white';
-      }
-      renderAll();
-    }
+        // หากผิดพลาด
+        inputs.forEach(i => {
+          i.classList.remove('border-neutral-700', 'border-emerald-500');
+          i.classList.add('border-rose-500');
+          i.value = '';
+        });
 
-    function renderList(tasksToRender) {
-      const container = document.getElementById('taskListContainer');
-      const emptyState = document.getElementById('emptyListState');
-      container.innerHTML = '';
+        if (errorMsg) {
+          errorMsg.classList.remove('opacity-0');
+        }
 
-      if (tasksToRender.length === 0) {
-        emptyState.classList.remove('hidden');
-        return;
-      }
-      emptyState.classList.add('hidden');
+        if (container) {
+          container.classList.remove('shake-animation');
+          void container.offsetWidth; // บังคับ Trigger reflow
+          container.classList.add('shake-animation');
+        }
 
-      tasksToRender.forEach(task => {
-        const isMine = task.assigneeId === currentUserId;
-        const assignee = TEAM_MEMBERS.find(m => m.id === task.assigneeId) || { name: 'ยังไม่ระบุ', username: 'unassigned' };
-        const category = CATEGORIES[task.category] || { label: task.category, slug: 'general', icon: 'ph-app-window' };
-        const priority = PRIORITIES[task.priority] || PRIORITIES.NORMAL;
-        const status = STATUSES[task.status] || STATUSES.TODO;
-
-        const totalSub = task.subtasks ? task.subtasks.length : 0;
-        const doneSub = task.subtasks ? task.subtasks.filter(s => s.done).length : 0;
-        const totalFiles = task.attachments ? task.attachments.length : 0;
-
-        const card = document.createElement('div');
-        card.className = `bg-cf-card hover:bg-cf-cardHover border ${isMine ? 'border-cf-blue/70 ring-1 ring-cf-blue/30' : 'border-cf-border'} rounded-lg p-3.5 transition group cursor-pointer space-y-2.5`;
-        card.onclick = () => openViewModal(task.id);
-
-        card.innerHTML = `
-          <div class="flex items-start justify-between gap-3">
-            <div class="flex items-start gap-3 min-w-0 flex-1">
-              <div class="w-8 h-8 rounded bg-neutral-900 border border-neutral-800 text-cf-blue flex items-center justify-center shrink-0 mt-0.5 group-hover:border-cf-blue/50 transition">
-                <i class="ph-bold ${category.icon} text-base"></i>
-              </div>
-
-              <div class="min-w-0 flex-1">
-                <div class="flex flex-wrap items-center gap-2 mb-2">
-                  <h3 class="font-bold text-white text-sm leading-relaxed break-words group-hover:text-cf-blue transition">
-                    ${escapeHtml(task.title)}
-                  </h3>
-                  ${isMine ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-cf-blue/20 text-cf-blue border border-cf-blue/40 shrink-0">ASSIGNED TO YOU</span>' : ''}
-                </div>
-
-                <div class="flex flex-wrap items-center gap-2 text-xs text-neutral-400 font-mono text-[11px] pt-1">
-                  <span class="text-neutral-400 font-sans">${category.label}</span>
-                  <span>&bull;</span>
-                  <span class="text-neutral-400">@${assignee.username}</span>
-                  <span>&bull;</span>
-                  <span class="${isDeadlineNear(task.deadline) && task.status !== 'DONE' ? 'text-rose-400 font-semibold' : 'text-neutral-500'}">
-                    Due: ${task.deadline}
-                  </span>
-                  ${totalFiles > 0 ? `
-                    <span>&bull;</span>
-                    <span class="text-sky-400 flex items-center gap-0.5"><i class="ph-bold ph-paperclip"></i> ${totalFiles} ไฟล์</span>
-                  ` : ''}
-                </div>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-2 shrink-0">
-              <span class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-neutral-800 bg-neutral-950 text-neutral-300 font-mono text-[11px]">
-                <i class="ph-bold ph-user-circle text-neutral-500"></i>
-                <span>${assignee.username}</span>
-              </span>
-
-              <span class="px-2 py-0.5 rounded text-[11px] font-mono border ${priority.badge}">
-                ${priority.label}
-              </span>
-
-              <span class="px-2 py-0.5 rounded text-[11px] font-mono border ${status.badge}">
-                ${status.label}
-              </span>
-            </div>
-          </div>
-
-          <div class="pt-2 border-t border-cf-border/80 flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-400 font-mono text-[11px]">
-            <div class="flex items-center gap-1.5 truncate max-w-xl text-neutral-400">
-              <i class="ph-bold ph-git-commit text-neutral-500 shrink-0"></i>
-              <span class="truncate font-sans text-neutral-300">${escapeHtml(task.notes && task.notes.length > 0 ? task.notes[0].text : (task.desc || 'ไม่มีบันทึกล่าสุด'))}</span>
-            </div>
-
-            ${totalSub > 0 ? `
-              <div class="flex items-center gap-2 shrink-0 text-neutral-400">
-                <i class="ph-bold ph-check-square"></i>
-                <span>${doneSub}/${totalSub} tasks</span>
-              </div>
-            ` : `
-              <div class="text-neutral-500 text-[10px]">
-                created: ${task.createdAt || 'recent'}
-              </div>
-            `}
-          </div>
-        `;
-
-        container.appendChild(card);
-      });
-    }
-
-    function renderKanban(tasksToRender) {
-      const cols = {
-        TODO: document.getElementById('col-TODO'),
-        IN_PROGRESS: document.getElementById('col-IN_PROGRESS'),
-        REVIEW: document.getElementById('col-REVIEW'),
-        DONE: document.getElementById('col-DONE')
-      };
-
-      Object.keys(cols).forEach(k => {
-        cols[k].innerHTML = '';
-        document.getElementById(`count-${k}`).textContent = '0';
-      });
-
-      const counts = { TODO: 0, IN_PROGRESS: 0, REVIEW: 0, DONE: 0 };
-
-      tasksToRender.forEach(task => {
-        const targetCol = cols[task.status] || cols.TODO;
-        counts[task.status] = (counts[task.status] || 0) + 1;
-
-        const isMine = task.assigneeId === currentUserId;
-        const assignee = TEAM_MEMBERS.find(m => m.id === task.assigneeId) || { name: '?', username: 'unassigned' };
-        const category = CATEGORIES[task.category] || { label: task.category };
-        const priority = PRIORITIES[task.priority] || PRIORITIES.NORMAL;
-
-        const card = document.createElement('div');
-        card.className = `bg-cf-card hover:bg-cf-cardHover border ${isMine ? 'border-cf-blue/70 ring-1 ring-cf-blue/30' : 'border-cf-border'} rounded p-3 text-xs space-y-2 cursor-pointer transition`;
-        card.onclick = () => openViewModal(task.id);
-
-        card.innerHTML = `
-          <div class="flex items-center justify-between text-[10px] font-mono">
-            <span class="text-neutral-500">${category.label}</span>
-            <span class="px-1.5 py-0.2 rounded border ${priority.badge}">${priority.label}</span>
-          </div>
-          <div class="font-medium text-white leading-snug">
-            ${escapeHtml(task.title)}
-          </div>
-          <div class="pt-1.5 border-t border-cf-border flex items-center justify-between text-[11px] font-mono text-neutral-400">
-            <span class="text-neutral-300 truncate">@${assignee.username}</span>
-            <span class="${isDeadlineNear(task.deadline) && task.status !== 'DONE' ? 'text-rose-400 font-semibold' : 'text-neutral-500'}">${task.deadline}</span>
-          </div>
-        `;
-
-        targetCol.appendChild(card);
-      });
-
-      Object.keys(counts).forEach(k => {
-        const el = document.getElementById(`count-${k}`);
-        if (el) el.textContent = counts[k];
-      });
-    }
-
-    function renderAll() {
-      const filtered = getFilteredTasks();
-      renderStats(filtered);
-      renderSidebarTeam();
-      if (currentViewMode === 'list') {
-        renderList(filtered);
-      } else {
-        renderKanban(filtered);
-      }
-    }
-
-    function togglePasscodeVisibility() {
-      const input = document.getElementById('taskPasscodeInput');
-      const icon = document.getElementById('passcodeToggleIcon');
-      if (!input || !icon) return;
-
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.className = 'ph-bold ph-eye-slash';
-      } else {
-        input.type = 'password';
-        icon.className = 'ph-bold ph-eye';
+        if (inputs.length > 0) inputs[0].focus();
       }
     }
 
@@ -1178,22 +1029,11 @@
       const container = document.getElementById('taskModalContainer');
       const form = document.getElementById('taskForm');
       const subtaskContainer = document.getElementById('subtaskListContainer');
-      const passcodeContainer = document.getElementById('passcodeContainer');
-      const passcodeInput = document.getElementById('taskPasscodeInput');
-      const passcodeFeedback = document.getElementById('passcodeFeedback');
 
       subtaskContainer.innerHTML = '';
       currentUploadedFiles = [];
       renderUploadedFilesList();
       form.reset();
-
-      if (passcodeInput) {
-        passcodeInput.type = 'password';
-        passcodeInput.classList.remove('border-rose-500', 'border-emerald-500');
-        passcodeInput.value = '';
-      }
-      const icon = document.getElementById('passcodeToggleIcon');
-      if (icon) icon.className = 'ph-bold ph-eye';
 
       if (taskId) {
         // โหมดแก้ไขงานเดิม
@@ -1211,12 +1051,6 @@
         document.getElementById('taskStatusInput').value = task.status;
         document.getElementById('taskDescInput').value = task.desc || '';
 
-        // ซ่อนกล่อง Passcode เมื่อแก้ไขงานที่มีอยู่แล้ว หรือสามารถเว้นว่างได้
-        if (passcodeContainer) {
-          passcodeContainer.classList.add('hidden');
-          passcodeInput.required = false;
-        }
-
         currentUploadedFiles = [...(task.attachments || [])];
         renderUploadedFilesList();
 
@@ -1228,16 +1062,6 @@
         document.getElementById('modalTitle').textContent = 'มอบหมายงานใหม่ (Create Task)';
         document.getElementById('submitBtnText').textContent = 'บันทึกและแจกจ่ายงาน';
         document.getElementById('formTaskId').value = '';
-
-        // แสดงกล่อง Passcode สำหรับการมอบหมายงานใหม่
-        if (passcodeContainer) {
-          passcodeContainer.classList.remove('hidden');
-          passcodeInput.required = true;
-        }
-        if (passcodeFeedback) {
-          passcodeFeedback.textContent = 'กรุณาใส่ Passcode เพื่อยืนยันสิทธิ์การสั่งงาน';
-          passcodeFeedback.className = 'text-[10px] text-neutral-500 font-mono';
-        }
 
         const targetDate = new Date();
         targetDate.setDate(targetDate.getDate() + 7);
@@ -1452,27 +1276,6 @@
       const deadline = document.getElementById('taskDeadlineInput').value;
       const status = document.getElementById('taskStatusInput').value;
       const desc = document.getElementById('taskDescInput').value.trim();
-
-      // ตรวจสอบ Passcode สำหรับการมอบหมายงานใหม่
-      if (!taskId) {
-        const passcodeInput = document.getElementById('taskPasscodeInput');
-        const passcodeFeedback = document.getElementById('passcodeFeedback');
-        const enteredPasscode = passcodeInput.value.trim();
-
-        if (enteredPasscode !== ADMIN_PASSCODE) {
-          passcodeInput.classList.add('border-rose-500');
-          passcodeInput.focus();
-          if (passcodeFeedback) {
-            passcodeFeedback.textContent = '❌ รหัส Passcode ไม่ถูกต้อง กรุณากรอกรหัสความปลอดภัย 8 หลักให้ถูกต้อง';
-            passcodeFeedback.className = 'text-[10px] text-rose-400 font-mono font-medium';
-          }
-          showToast('Passcode ไม่ถูกต้อง! ไม่สามารถมอบหมายงานได้', 'warning');
-          return;
-        } else {
-          passcodeInput.classList.remove('border-rose-500');
-          passcodeInput.classList.add('border-emerald-500');
-        }
-      }
 
       const subtaskInputs = document.querySelectorAll('.subtask-item-input');
       const subtasks = [];
