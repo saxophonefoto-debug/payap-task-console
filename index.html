@@ -1,0 +1,1838 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบบริหารและแจกจ่ายงาน - สำนักงานการตลาดและสื่อสารองค์กร ม.พายัพ</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            cf: {
+              black: '#000000',
+              sidebar: '#050505',
+              card: '#0c0c0e',
+              cardHover: '#131316',
+              border: '#222226',
+              borderLight: '#2f3037',
+              blue: '#0051c3',
+              blueHover: '#0043a4',
+              accent: '#f38020',
+              muted: '#71717a'
+            }
+          },
+          fontFamily: {
+            sans: ['Sarabun', 'Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #000000;
+      color: #e4e4e7;
+    }
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #09090b;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #27272a;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3f3f46;
+    }
+    .cf-border {
+      border: 1px solid #222226;
+    }
+  </style>
+</head>
+<body class="bg-cf-black font-sans text-neutral-200 antialiased min-h-screen flex flex-col selection:bg-cf-blue selection:text-white">
+
+  <header class="bg-cf-black text-white h-14 border-b border-cf-border sticky top-0 z-40 flex items-center justify-between px-3 sm:px-6">
+    <div class="flex items-center gap-2">
+      <span class="text-xs font-mono font-semibold tracking-wider text-neutral-400">PAYAP UNIVERSITY &bull; OMOC TASK CONSOLE</span>
+    </div>
+
+    <!-- Quick Actions on Header -->
+    <div class="flex items-center gap-2 sm:gap-3 text-xs">
+      <button onclick="toggleQuickFilterMyTasks()" id="quickFilterBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded border border-cf-border text-neutral-300 hover:bg-neutral-900 transition font-sans">
+        <i class="ph-bold ph-user text-xs"></i>
+        <span id="quickFilterBtnText">เฉพาะงานของฉัน</span>
+      </button>
+
+      <div class="h-4 w-px bg-cf-border hidden sm:block"></div>
+
+      <div class="flex items-center gap-1 text-neutral-400">
+        <button onclick="showToast('ระบบบริหารงาน สำนักงานการตลาดและสื่อสารองค์กร ม.พายัพ (Cloudflare Edition)', 'info')" class="p-1.5 hover:text-white rounded hover:bg-neutral-900 transition" title="เกี่ยวกับระบบ">
+          <i class="ph-bold ph-question text-base"></i>
+        </button>
+        <button onclick="fetchTasksFromHost()" class="p-1.5 hover:text-white rounded hover:bg-neutral-900 transition" title="รีเฟรชข้อมูลจากโฮสต์">
+          <i class="ph-bold ph-arrows-clockwise text-base"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex flex-1 w-full overflow-hidden">
+    
+    <!-- LEFT SIDEBAR -->
+    <aside class="hidden lg:flex flex-col w-60 border-r border-cf-border bg-cf-sidebar shrink-0 p-3 space-y-4 select-none">
+      
+      <!-- Quick Search Input -->
+      <div class="relative">
+        <i class="ph-bold ph-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-500 text-xs"></i>
+        <input type="text" id="sidebarSearch" oninput="handleSearch(this.value)" placeholder="ค้นหาภารกิจ..." class="w-full bg-neutral-950 border border-cf-border rounded text-xs pl-8 pr-12 py-1.5 text-neutral-300 placeholder-neutral-600 focus:outline-none focus:border-cf-blue font-sans">
+        <span class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-mono text-neutral-500 bg-neutral-900 px-1 py-0.5 rounded border border-neutral-800">⌘K</span>
+      </div>
+
+      <!-- Navigation List -->
+      <div class="space-y-4 text-xs">
+        <div>
+          <button onclick="setSidebarCategory('ALL')" class="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded text-neutral-300 hover:bg-neutral-900 transition font-medium group text-left">
+            <i class="ph-bold ph-house-line text-neutral-400 group-hover:text-white"></i>
+            <span>Account Home</span>
+          </button>
+        </div>
+
+        <!-- Section: Categories -->
+        <div class="space-y-1">
+          <div class="flex items-center justify-between px-2.5 text-[11px] font-mono text-neutral-500 uppercase tracking-wider">
+            <span>ภารกิจ & หมวดหมู่งาน</span>
+            <i class="ph-bold ph-caret-down text-[10px]"></i>
+          </div>
+          
+          <button onclick="setSidebarCategory('ALL')" id="nav-cat-ALL" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded bg-neutral-900/80 text-white font-medium border border-neutral-800 text-left">
+            <div class="flex items-center gap-2 truncate">
+              <i class="ph-bold ph-stack text-cf-blue"></i>
+              <span class="truncate">ภารกิจทั้งหมด</span>
+            </div>
+            <span id="navCountAll" class="text-[10px] font-mono text-neutral-400">0</span>
+          </button>
+
+          <button onclick="setSidebarCategory('GRAPHIC')" id="nav-cat-GRAPHIC" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/50 transition text-left">
+            <div class="flex items-center gap-2 truncate">
+              <i class="ph-bold ph-paint-brush"></i>
+              <span class="truncate">สื่อสิ่งพิมพ์และกราฟิก</span>
+            </div>
+          </button>
+
+          <button onclick="setSidebarCategory('VIDEO')" id="nav-cat-VIDEO" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/50 transition text-left">
+            <div class="flex items-center gap-2 truncate">
+              <i class="ph-bold ph-video-camera"></i>
+              <span class="truncate">วิดีโอ & สื่อมัลติมีเดีย</span>
+            </div>
+          </button>
+
+          <button onclick="setSidebarCategory('PR')" id="nav-cat-PR" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/50 transition text-left">
+            <div class="flex items-center gap-2 truncate">
+              <i class="ph-bold ph-newspaper"></i>
+              <span class="truncate">ข่าว & สื่อสารองค์กร</span>
+            </div>
+          </button>
+
+          <button onclick="setSidebarCategory('MARKETING')" id="nav-cat-MARKETING" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/50 transition text-left">
+            <div class="flex items-center gap-2 truncate">
+              <i class="ph-bold ph-megaphone"></i>
+              <span class="truncate">การตลาด & โฆษณา</span>
+            </div>
+          </button>
+
+          <button onclick="setSidebarCategory('EVENT')" id="nav-cat-EVENT" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/50 transition text-left">
+            <div class="flex items-center gap-2 truncate">
+              <i class="ph-bold ph-calendar-blank"></i>
+              <span class="truncate">กิจกรรม & นิทรรศการ</span>
+            </div>
+          </button>
+        </div>
+
+        <!-- Section: Team Members -->
+        <div class="space-y-1 pt-2 border-t border-cf-border">
+          <div class="px-2.5 text-[11px] font-mono text-neutral-500 uppercase tracking-wider">
+            <span>ทีมงานสื่อสารองค์กร</span>
+          </div>
+          <div id="sidebarTeamList" class="space-y-0.5 pt-1">
+            <!-- Rendered team list via JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-auto pt-3 border-t border-cf-border text-[11px] text-neutral-500 font-mono">
+        <div>Payap University</div>
+        <div class="text-[10px] text-neutral-600">Marketing & Comm Office</div>
+      </div>
+    </aside>
+
+    <main class="flex-1 min-w-0 overflow-y-auto px-4 sm:px-8 py-6 space-y-6">
+      
+      <!-- Top Title and Action -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-cf-border">
+        <div>
+          <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+            ภารกิจ & กระจายงาน
+          </h1>
+          <p class="text-xs text-neutral-400 mt-1">
+            สำนักงานการตลาดและสื่อสารองค์กร มหาวิทยาลัยพายัพ &bull; จัดการ บันทึก มอบหมาย และติดตามงาน
+          </p>
+        </div>
+
+        <!-- Primary Create Action Button -->
+        <div class="flex items-center gap-2">
+          <button id="btnOpenCreateTask" onclick="openTaskModal()" class="bg-cf-blue hover:bg-cf-blueHover text-white font-medium px-3.5 py-2 rounded-md text-xs sm:text-sm flex items-center gap-1.5 transition active:scale-[0.98] shadow-sm">
+            <i class="ph-bold ph-plus"></i>
+            <span>มอบหมายงานใหม่</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters & Toolbar -->
+      <div class="space-y-3">
+        <div class="flex flex-wrap items-center gap-2">
+          
+          <div class="relative flex-1 min-w-[200px]">
+            <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 text-sm"></i>
+            <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="ค้นหาชื่องาน, รายละเอียด, ผู้รับผิดชอบ..." class="w-full pl-9 pr-3 py-1.5 bg-neutral-950 border border-cf-border rounded-md text-xs text-neutral-200 placeholder-neutral-500 focus:outline-none focus:border-cf-blue transition">
+          </div>
+
+          <select id="filterStatus" onchange="applyFilters()" class="text-xs bg-neutral-950 border border-cf-border rounded-md px-2.5 py-1.5 text-neutral-300 focus:outline-none focus:border-cf-blue cursor-pointer">
+            <option value="ALL">สถานะทั้งหมด</option>
+            <option value="TODO">ต้องทำ</option>
+            <option value="IN_PROGRESS">ระหว่างดำเนินการ</option>
+            <option value="REVIEW">ตรวจ</option>
+            <option value="DONE">เสร็จสิ้น</option>
+          </select>
+
+          <select id="filterPriority" onchange="applyFilters()" class="text-xs bg-neutral-950 border border-cf-border rounded-md px-2.5 py-1.5 text-neutral-300 focus:outline-none focus:border-cf-blue cursor-pointer">
+            <option value="ALL">ความสำคัญทั้งหมด</option>
+            <option value="URGENT">ด่วนที่สุด</option>
+            <option value="HIGH">ด่วน</option>
+            <option value="NORMAL">ปกติ</option>
+          </select>
+
+          <select id="filterAssignee" onchange="applyFilters()" class="text-xs bg-neutral-950 border border-cf-border rounded-md px-2.5 py-1.5 text-neutral-300 focus:outline-none focus:border-cf-blue cursor-pointer">
+            <option value="ALL">ผู้รับผิดชอบทั้งหมด</option>
+          </select>
+
+          <!-- View Switcher -->
+          <div class="flex items-center bg-neutral-950 border border-cf-border rounded-md p-0.5">
+            <button id="viewListBtn" onclick="switchView('list')" class="px-2 py-1 rounded text-xs text-white bg-neutral-800" title="มุมมองรายการ">
+              <i class="ph-bold ph-list-dashes"></i>
+            </button>
+            <button id="viewKanbanBtn" onclick="switchView('kanban')" class="px-2 py-1 rounded text-xs text-neutral-400 hover:text-white" title="มุมมองกระดาน">
+              <i class="ph-bold ph-kanban"></i>
+            </button>
+          </div>
+
+          <button onclick="resetFilters()" title="รีเซ็ตตัวกรอง" class="p-1.5 bg-neutral-950 hover:bg-neutral-900 text-neutral-400 hover:text-white border border-cf-border rounded-md transition">
+            <i class="ph-bold ph-arrow-counter-clockwise text-sm"></i>
+          </button>
+        </div>
+
+        <div id="activeFilterTags" class="flex flex-wrap items-center gap-1.5 text-xs empty:hidden"></div>
+      </div>
+
+      <section id="listViewSection" class="space-y-2">
+        <div id="taskListContainer" class="space-y-2">
+          <!-- Dynamic Task Cards -->
+        </div>
+
+        <div id="emptyListState" class="hidden py-16 text-center border border-dashed border-cf-border rounded-lg bg-neutral-950/40">
+          <i class="ph-bold ph-tray text-3xl text-neutral-600 mb-2"></i>
+          <p class="text-xs text-neutral-400 font-medium">ไม่พบภารกิจที่ตรงกับเงื่อนไขการค้นหา</p>
+          <button onclick="resetFilters()" class="mt-3 text-xs text-cf-blue hover:underline">ล้างตัวกรองทั้งหมด</button>
+        </div>
+
+        <div class="pt-4 flex items-center justify-between text-xs text-neutral-400 border-t border-cf-border font-mono">
+          <div id="paginationInfo">Showing 0-0 of 0</div>
+          <div class="flex items-center gap-1">
+            <span class="px-2.5 py-1 rounded border border-cf-border bg-neutral-900 text-white font-bold">1</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="kanbanViewSection" class="hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 items-start">
+          
+          <div class="bg-neutral-950 border border-cf-border rounded-lg p-3 flex flex-col min-h-[460px]">
+            <div class="flex items-center justify-between pb-2 mb-2 border-b border-cf-border">
+              <div class="flex items-center gap-1.5 text-xs font-mono text-neutral-400">
+                <span class="w-2 h-2 rounded-full bg-neutral-500"></span>
+                <span>ต้องทำ</span>
+              </div>
+              <span id="count-TODO" class="text-[11px] font-mono bg-neutral-900 border border-cf-border px-1.5 py-0.5 rounded text-neutral-300">0</span>
+            </div>
+            <div id="col-TODO" class="space-y-2 flex-1 overflow-y-auto max-h-[650px] pr-0.5"></div>
+          </div>
+
+          <div class="bg-neutral-950 border border-cf-border rounded-lg p-3 flex flex-col min-h-[460px]">
+            <div class="flex items-center justify-between pb-2 mb-2 border-b border-cf-border">
+              <div class="flex items-center gap-1.5 text-xs font-mono text-amber-400">
+                <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                <span>ระหว่างดำเนินการ</span>
+              </div>
+              <span id="count-IN_PROGRESS" class="text-[11px] font-mono bg-neutral-900 border border-cf-border px-1.5 py-0.5 rounded text-amber-400">0</span>
+            </div>
+            <div id="col-IN_PROGRESS" class="space-y-2 flex-1 overflow-y-auto max-h-[650px] pr-0.5"></div>
+          </div>
+
+          <div class="bg-neutral-950 border border-cf-border rounded-lg p-3 flex flex-col min-h-[460px]">
+            <div class="flex items-center justify-between pb-2 mb-2 border-b border-cf-border">
+              <div class="flex items-center gap-1.5 text-xs font-mono text-purple-400">
+                <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                <span>ตรวจ</span>
+              </div>
+              <span id="count-REVIEW" class="text-[11px] font-mono bg-neutral-900 border border-cf-border px-1.5 py-0.5 rounded text-purple-400">0</span>
+            </div>
+            <div id="col-REVIEW" class="space-y-2 flex-1 overflow-y-auto max-h-[650px] pr-0.5"></div>
+          </div>
+
+          <div class="bg-neutral-950 border border-cf-border rounded-lg p-3 flex flex-col min-h-[460px]">
+            <div class="flex items-center justify-between pb-2 mb-2 border-b border-cf-border">
+              <div class="flex items-center gap-1.5 text-xs font-mono text-emerald-400">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                <span>เสร็จสิ้น</span>
+              </div>
+              <span id="count-DONE" class="text-[11px] font-mono bg-neutral-900 border border-cf-border px-1.5 py-0.5 rounded text-emerald-400">0</span>
+            </div>
+            <div id="col-DONE" class="space-y-2 flex-1 overflow-y-auto max-h-[650px] pr-0.5"></div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+    <aside class="hidden xl:block w-72 shrink-0 border-l border-cf-border bg-cf-sidebar p-4 space-y-4 select-none overflow-y-auto">
+      
+      <div>
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-bold text-white tracking-tight">สรุปภาระงาน (Usage)</h3>
+          <span class="bg-cf-blue/20 text-cf-blue border border-cf-blue/40 text-[10px] font-mono px-1.5 py-0.5 rounded">
+            Live
+          </span>
+        </div>
+        <div class="mt-2 flex items-baseline justify-between text-xs text-neutral-400 font-mono">
+          <span>ความคืบหน้ารวม</span>
+          <span id="statProgressRatio" class="text-white font-bold">0 / 0</span>
+        </div>
+        <div class="w-full bg-neutral-900 rounded-full h-1.5 mt-1.5 overflow-hidden border border-neutral-800">
+          <div id="statProgressBar" class="bg-cf-blue h-1.5 rounded-full transition-all" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 pt-2">
+        <div class="bg-neutral-950 border border-cf-border rounded p-2.5">
+          <div class="text-[11px] text-neutral-500 font-mono">งานทั้งหมด</div>
+          <div id="statTotal" class="text-xl font-bold font-mono text-white mt-1">0</div>
+        </div>
+        <div class="bg-neutral-950 border border-cf-border rounded p-2.5">
+          <div class="text-[11px] text-amber-400/80 font-mono">ระหว่างดำเนินการ</div>
+          <div id="statInProgress" class="text-xl font-bold font-mono text-amber-400 mt-1">0</div>
+        </div>
+        <div class="bg-neutral-950 border border-cf-border rounded p-2.5">
+          <div class="text-[11px] text-purple-400/80 font-mono">ตรวจ</div>
+          <div id="statReview" class="text-xl font-bold font-mono text-purple-400 mt-1">0</div>
+        </div>
+        <div class="bg-neutral-950 border border-cf-border rounded p-2.5">
+          <div class="text-[11px] text-emerald-400/80 font-mono">เสร็จสิ้น</div>
+          <div id="statCompleted" class="text-xl font-bold font-mono text-emerald-400 mt-1">0</div>
+        </div>
+      </div>
+
+      <!-- Current User Context Card -->
+      <div class="bg-neutral-950 border border-cf-border rounded-lg p-3 space-y-2 text-xs">
+        <div class="flex items-center justify-between">
+          <div class="text-[11px] font-mono text-neutral-500 uppercase tracking-wider">
+            สถานะผู้ใช้งานปัจจุบัน
+          </div>
+          <select id="userSelectorSide" onchange="handleUserChange(this.value)" class="bg-neutral-900 border border-cf-border rounded text-[11px] text-neutral-300 px-2 py-0.5 focus:outline-none cursor-pointer font-sans">
+            <!-- Populated dynamically via JS -->
+          </select>
+        </div>
+        <div class="flex items-center gap-2 pt-1">
+          <div id="sideUserAvatar" class="w-7 h-7 rounded bg-neutral-800 border border-neutral-700 text-white font-mono text-xs flex items-center justify-center font-bold">
+            WC
+          </div>
+          <div class="truncate">
+            <div id="sideUserName" class="font-medium text-white truncate">ชื่อผู้ใช้งาน</div>
+            <div id="sideUserRole" class="text-[11px] text-neutral-400 truncate">ตำแหน่ง</div>
+          </div>
+        </div>
+        <div class="pt-2 border-t border-neutral-900 text-[11px] text-neutral-400 space-y-1 font-mono">
+          <div class="flex justify-between">
+            <span class="text-neutral-500">สิทธิ์:</span>
+            <span id="sideUserPermission" class="text-neutral-300">Admin</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-neutral-500">สังกัด:</span>
+            <span class="text-neutral-300 truncate">สำนักงานการตลาดฯ</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- University Account Details -->
+      <div class="bg-neutral-950 border border-cf-border rounded-lg p-3 space-y-2 text-[11px] font-mono text-neutral-400">
+        <div class="text-neutral-500 uppercase tracking-wider text-[10px]">ข้อมูลระบบ (System Info)</div>
+        <div class="space-y-1">
+          <div class="flex justify-between">
+            <span class="text-neutral-600">Platform:</span>
+            <span class="text-neutral-300 truncate">Cloudflare Pages</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-neutral-600">Database:</span>
+            <span class="text-emerald-400 truncate">Google Sheets (Live)</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-neutral-600">Sync:</span>
+            <span class="text-neutral-300">Apps Script Web App</span>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+  </div>
+
+  <div id="taskModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 hidden opacity-0 transition-opacity duration-150">
+    <div class="bg-neutral-950 rounded-lg max-w-xl w-full border border-cf-border shadow-2xl flex flex-col transform transition-transform duration-150 scale-98 max-h-[95vh] overflow-y-auto" id="taskModalContainer">
+      
+      <div class="px-5 py-3.5 border-b border-cf-border flex items-center justify-between sticky top-0 bg-neutral-950 z-10">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-cf-blue"></span>
+          <h2 id="modalTitle" class="text-sm font-bold text-white font-sans">มอบหมายงานใหม่ (Create Task)</h2>
+        </div>
+        <button onclick="closeTaskModal()" class="text-neutral-400 hover:text-white transition p-1">
+          <i class="ph-bold ph-x text-sm"></i>
+        </button>
+      </div>
+
+      <form id="taskForm" onsubmit="handleTaskFormSubmit(event)" class="p-5 space-y-4 text-xs text-neutral-200">
+        <input type="hidden" id="formTaskId">
+
+        <div>
+          <label class="block font-medium text-neutral-300 mb-1" for="taskTitleInput">ชื่องาน / ภารกิจ <span class="text-rose-400">*</span></label>
+          <input type="text" id="taskTitleInput" required placeholder="เช่น ออกแบบ Key Visual รับสมัครนักศึกษาใหม่ TCAS" class="w-full px-3 py-2 rounded bg-neutral-900 border border-cf-border text-white placeholder-neutral-600 focus:outline-none focus:border-cf-blue font-sans">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-neutral-300 mb-1" for="taskCategoryInput">หมวดหมู่งาน</label>
+            <select id="taskCategoryInput" required class="w-full px-3 py-2 rounded bg-neutral-900 border border-cf-border text-white focus:outline-none focus:border-cf-blue font-sans cursor-pointer">
+              <option value="GRAPHIC">สื่อสิ่งพิมพ์และกราฟิก</option>
+              <option value="VIDEO">วิดีโอ & สื่อมัลติมีเดีย</option>
+              <option value="PR">ข่าว & สื่อสารองค์กร</option>
+              <option value="MARKETING">การตลาด & โฆษณา</option>
+              <option value="EVENT">กิจกรรม & นิทรรศการ</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-medium text-neutral-300 mb-1" for="taskAssigneeInput">มอบหมายให้ (Assignee) <span class="text-rose-400">*</span></label>
+            <select id="taskAssigneeInput" required class="w-full px-3 py-2 rounded bg-neutral-900 border border-cf-border text-white focus:outline-none focus:border-cf-blue font-sans cursor-pointer">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block font-medium text-neutral-300 mb-1" for="taskPriorityInput">ระดับความสำคัญ</label>
+            <select id="taskPriorityInput" class="w-full px-3 py-2 rounded bg-neutral-900 border border-cf-border text-white focus:outline-none focus:border-cf-blue font-sans cursor-pointer">
+              <option value="NORMAL">ปกติ</option>
+              <option value="HIGH">ด่วน</option>
+              <option value="URGENT">ด่วนที่สุด</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-medium text-neutral-300 mb-1" for="taskDeadlineInput">กำหนดส่ง (Deadline)</label>
+            <input type="date" id="taskDeadlineInput" required class="w-full px-3 py-1.5 rounded bg-neutral-900 border border-cf-border text-white focus:outline-none focus:border-cf-blue font-sans">
+          </div>
+
+          <div>
+            <label class="block font-medium text-neutral-300 mb-1" for="taskStatusInput">สถานะเริ่มต้น</label>
+            <select id="taskStatusInput" class="w-full px-3 py-2 rounded bg-neutral-900 border border-cf-border text-white focus:outline-none focus:border-cf-blue font-sans cursor-pointer">
+              <option value="TODO">ต้องทำ</option>
+              <option value="IN_PROGRESS">ระหว่างดำเนินการ</option>
+              <option value="REVIEW">ตรวจ</option>
+              <option value="DONE">เสร็จสิ้น</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-medium text-neutral-300 mb-1" for="taskDescInput">รายละเอียดบรีฟ / สเปกงาน</label>
+          <textarea id="taskDescInput" rows="3" placeholder="ระบุเป้าหมาย ลิงก์ไดรฟ์ ขนาดชิ้นงาน หรือข้อกำหนด..." class="w-full px-3 py-2 rounded bg-neutral-900 border border-cf-border text-white placeholder-neutral-600 focus:outline-none focus:border-cf-blue font-sans"></textarea>
+        </div>
+
+        <!-- Google Drive File & Link Attachment Area -->
+        <div class="p-3 bg-neutral-900/60 border border-cf-border rounded-md space-y-3">
+          <div class="flex items-center justify-between border-b border-neutral-800 pb-1.5">
+            <span class="font-medium text-neutral-200 font-mono text-[11px] flex items-center gap-1.5">
+              <i class="ph-bold ph-paperclip text-cf-blue"></i> แนบไฟล์งาน / ลิงก์ไดรฟ์
+            </span>
+            <span class="text-[10px] text-neutral-500 font-normal">บันทึกเข้า Google Drive อัตโนมัติ</span>
+          </div>
+
+          <!-- 1. อัปโหลดไฟล์ตรง -->
+          <div class="space-y-1.5">
+            <span class="text-[10px] text-neutral-400 font-mono">1. อัปโหลดไฟล์ (PDF, ภาพ, สคริปต์):</span>
+            <div class="flex items-center gap-2">
+              <input type="file" id="taskFileInput" class="block w-full text-xs text-neutral-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-mono file:bg-neutral-800 file:text-neutral-200 hover:file:bg-neutral-700 cursor-pointer">
+              <button type="button" onclick="uploadAttachmentToDrive()" id="btnUploadFile" class="px-3 py-1.5 rounded bg-cf-blue hover:bg-cf-blueHover text-white text-xs shrink-0 flex items-center gap-1.5 transition">
+                <i class="ph-bold ph-cloud-arrow-up"></i> อัปโหลด
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. แปะลิงก์ Google Drive / Canva / Figma / OneDrive -->
+          <div class="space-y-1.5 pt-1 border-t border-neutral-900">
+            <span class="text-[10px] text-neutral-400 font-mono">2. หรือแปะลิงก์ไดรฟ์ / โฟลเดอร์งานขนาดใหญ่:</span>
+            <div class="flex items-center gap-2">
+              <input type="url" id="externalLinkInput" placeholder="วาง URL เช่น https://drive.google.com/... หรือ Canva" class="flex-1 px-2.5 py-1.5 rounded bg-neutral-950 border border-cf-border text-xs text-neutral-200 placeholder-neutral-600 focus:outline-none focus:border-cf-blue font-sans">
+              <input type="text" id="externalLinkNameInput" placeholder="ชื่อที่แสดง (เช่น โฟลเดอร์รูปดิบ)" class="w-36 px-2.5 py-1.5 rounded bg-neutral-950 border border-cf-border text-xs text-neutral-200 placeholder-neutral-600 focus:outline-none focus:border-cf-blue font-sans">
+              <button type="button" onclick="addExternalLink()" class="px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 text-xs shrink-0 flex items-center gap-1">
+                <i class="ph-bold ph-plus"></i> เพิ่มลิงก์
+              </button>
+            </div>
+          </div>
+
+          <!-- รายการไฟล์ที่แนบแล้ว -->
+          <div id="uploadedFilesList" class="space-y-1 text-xs pt-1 empty:hidden"></div>
+        </div>
+
+        <div>
+          <label class="block font-medium text-neutral-300 mb-1">รายการเช็กลิสต์ย่อย (Subtasks)</label>
+          <div id="subtaskListContainer" class="space-y-1.5 mb-2"></div>
+          <button type="button" onclick="addSubtaskInput()" class="text-xs text-cf-blue hover:underline font-medium flex items-center gap-1">
+            <i class="ph-bold ph-plus"></i> เพิ่มข้อย่อย
+          </button>
+        </div>
+
+        <div class="pt-3 border-t border-cf-border flex items-center justify-end gap-2">
+          <button type="button" onclick="closeTaskModal()" class="px-3.5 py-1.5 rounded border border-cf-border hover:bg-neutral-900 text-neutral-300 font-medium transition">
+            ยกเลิก
+          </button>
+          <button type="submit" class="bg-cf-blue hover:bg-cf-blueHover text-white font-medium px-4 py-1.5 rounded transition">
+            <span id="submitBtnText">บันทึกและแจกจ่ายงาน</span>
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <div id="viewModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 hidden opacity-0 transition-opacity duration-150">
+    <div class="bg-neutral-950 rounded-lg max-w-xl w-full border border-cf-border shadow-2xl flex flex-col transform transition-transform duration-150 scale-98 max-h-[90vh] overflow-y-auto" id="viewModalContainer">
+      
+      <div class="px-5 py-3 border-b border-cf-border flex items-center justify-between sticky top-0 bg-neutral-950 z-10">
+        <div class="flex items-center gap-2">
+          <span id="viewTaskCategoryBadge" class="px-2 py-0.5 rounded text-[11px] font-mono border border-neutral-700 bg-neutral-900 text-neutral-300">หมวดหมู่</span>
+          <span id="viewTaskPriorityBadge" class="px-2 py-0.5 rounded text-[11px] font-mono border border-neutral-700 bg-neutral-900 text-neutral-300">ความสำคัญ</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button id="viewEditBtn" onclick="editCurrentViewingTask()" class="text-xs text-neutral-300 hover:text-white px-2 py-1 rounded border border-cf-border hover:bg-neutral-900 transition flex items-center gap-1">
+            <i class="ph-bold ph-pencil-simple"></i> แก้ไข
+          </button>
+          <button onclick="closeViewModal()" class="text-neutral-400 hover:text-white p-1">
+            <i class="ph-bold ph-x text-sm"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="p-5 space-y-5 text-xs text-neutral-300">
+        <div>
+          <h2 id="viewTaskTitle" class="text-base font-bold text-white leading-relaxed">ชื่องาน</h2>
+          <div class="text-[11px] text-neutral-500 font-mono mt-1 flex flex-wrap items-center gap-2">
+            <span>ID: <span id="viewTaskIdText" class="text-neutral-400">task-000</span></span>
+            <span>&bull;</span>
+            <span>Created: <span id="viewTaskCreatedAt">-</span></span>
+            <span>&bull;</span>
+            <span class="text-neutral-300">Deadline: <span id="viewTaskDeadline" class="font-bold text-white">-</span></span>
+          </div>
+        </div>
+
+        <div class="bg-neutral-900/60 border border-cf-border rounded-md p-3">
+          <div class="text-[11px] font-mono text-neutral-400 uppercase tracking-wider mb-2">เปลี่ยนสถานะงาน (Workflow State)</div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5" id="statusTransitionButtons"></div>
+        </div>
+
+        <div class="flex items-center justify-between p-3 bg-neutral-900/40 border border-cf-border rounded-md">
+          <div class="flex items-center gap-2.5">
+            <div id="viewAssigneeAvatar" class="w-8 h-8 rounded bg-neutral-800 border border-neutral-700 text-white font-mono text-xs flex items-center justify-center font-bold">
+              -
+            </div>
+            <div>
+              <div class="text-[10px] text-neutral-500 font-mono">ผู้รับผิดชอบงานนี้:</div>
+              <div id="viewAssigneeName" class="font-bold text-white">ชื่อเจ้าหน้าที่</div>
+              <div id="viewAssigneeRole" class="text-[11px] text-neutral-400">ตำแหน่ง</div>
+            </div>
+          </div>
+          <div id="viewAssigneeStatusIndicator" class="text-right"></div>
+        </div>
+
+        <div>
+          <div class="font-medium text-neutral-400 mb-1 flex items-center gap-1 font-mono text-[11px]">
+            <i class="ph-bold ph-text-align-left"></i>
+            <span>DESCRIPTION / BRIEF</span>
+          </div>
+          <div id="viewTaskDesc" class="p-3 bg-neutral-900/40 border border-cf-border rounded-md text-neutral-300 whitespace-pre-line leading-relaxed">
+            ไม่มีรายละเอียดเพิ่มเติม
+          </div>
+        </div>
+
+        <!-- Attached Files in View Modal -->
+        <div id="viewAttachmentsSection" class="hidden space-y-3">
+          <div class="font-medium text-neutral-400 flex items-center gap-1 font-mono text-[11px]">
+            <i class="ph-bold ph-paperclip text-cf-blue"></i>
+            <span>ATTACHED FILES & MEDIA (ไฟล์และรูปภาพแนบ)</span>
+          </div>
+
+          <!-- Image Preview Gallery - แสดงภาพตัวอย่างขนาดใหญ่เด่นชัดทันทีที่คลิกดูงาน -->
+          <div id="viewAttachmentsImageGrid" class="space-y-3 empty:hidden"></div>
+
+          <!-- Non-image Files and Links (ไฟล์เอกสารหรือลิงก์อื่น ๆ) -->
+          <div id="viewAttachmentsList" class="space-y-1.5 empty:hidden"></div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1 font-mono text-[11px]">
+            <span class="text-neutral-400">CHECKLIST ITEMS</span>
+            <span id="checklistProgressText" class="text-neutral-500 font-mono">0/0</span>
+          </div>
+          <div id="viewChecklistItems" class="space-y-1.5"></div>
+        </div>
+
+        <div>
+          <div class="font-mono text-[11px] text-neutral-400 mb-1.5 flex items-center gap-1">
+            <i class="ph-bold ph-chat-circle-dots"></i>
+            <span>ACTIVITY & UPDATES</span>
+          </div>
+          <div id="viewNotesList" class="space-y-1.5 max-h-36 overflow-y-auto mb-2 font-mono text-[11px]"></div>
+          <div class="flex gap-1.5">
+            <input type="text" id="newNoteInput" placeholder="พิมพ์ข้อความอัปเดตความคืบหน้า..." class="flex-1 px-3 py-1.5 rounded bg-neutral-900 border border-cf-border text-white text-xs placeholder-neutral-600 focus:outline-none focus:border-cf-blue font-sans">
+            <button onclick="addNoteToCurrentTask()" class="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded text-xs font-medium border border-neutral-700 transition">
+              ส่งอัปเดต
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-5 py-3 border-t border-cf-border flex items-center justify-between bg-neutral-950">
+        <button id="viewDeleteBtn" onclick="deleteCurrentViewingTask()" class="text-rose-400 hover:text-rose-300 text-xs font-mono flex items-center gap-1">
+          <i class="ph-bold ph-trash"></i> ลบภารกิจนี้
+        </button>
+        <button onclick="closeViewModal()" class="px-3.5 py-1.5 bg-neutral-900 hover:bg-neutral-800 text-neutral-300 rounded text-xs border border-cf-border transition">
+          ปิดหน้าต่าง
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="customConfirmModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-150">
+    <div class="bg-neutral-950 rounded-lg max-w-sm w-full p-4 border border-cf-border shadow-2xl text-center space-y-3">
+      <div class="w-10 h-10 rounded-full bg-rose-950/40 text-rose-400 border border-rose-900/60 mx-auto flex items-center justify-center text-lg">
+        <i class="ph-bold ph-warning-circle"></i>
+      </div>
+      <h3 id="confirmModalTitle" class="font-bold text-white text-sm">ยืนยันการทำรายการ</h3>
+      <p id="confirmModalDesc" class="text-xs text-neutral-400">คุณแน่ใจหรือไม่ว่าต้องการดำเนินการนี้?</p>
+      <div class="pt-2 flex justify-center gap-2">
+        <button id="confirmCancelBtn" class="px-3 py-1.5 rounded text-xs border border-cf-border hover:bg-neutral-900 text-neutral-300">
+          ยกเลิก
+        </button>
+        <button id="confirmActionBtn" class="px-3 py-1.5 rounded text-xs bg-rose-600 hover:bg-rose-700 text-white font-medium">
+          ยืนยันการลบ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2 pointer-events-none"></div>
+
+  <script>
+    // ชี้ไปยัง Google Apps Script Web App สำหรับเชื่อมต่อ Google Sheets โดยตรง
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwXT5r-h924waQR9cyTPvk2fURGzAU-HTLw2z39hWl7UDIOM_fzGkrQL0Epb20Ji7cd/exec';
+
+    const TEAM_MEMBERS = [
+      { id: 'u_woranai', name: 'อ.วรนัย ไชยวงค์ญาติ', role: 'หัวหน้าสำนักงาน / ผู้ดูแลระบบ', isAdmin: true, username: 'woranai.c', avatar: 'WC' },
+      { id: 'u_natthawit', name: 'ณัฐวิทย์ ชัยพรหมมา', role: 'นักออกแบบกราฟิกและสื่อสิ่งพิมพ์', isAdmin: false, username: 'natthawit.c', avatar: 'NC' },
+      { id: 'u_theeraphan', name: 'ธีรพันธุ์ ปราบภัย', role: 'ช่างภาพและผู้ผลิตสื่อวิดีโอ', isAdmin: false, username: 'theeraphan.p', avatar: 'TP' },
+      { id: 'u_ratchadaporn', name: 'รัชดาพร ประทุม', role: 'เจ้าหน้าที่ประชาสัมพันธ์และสื่อสารการตลาด', isAdmin: false, username: 'ratchadaporn.p', avatar: 'RP' }
+    ];
+
+    const CATEGORIES = {
+      GRAPHIC: { label: 'สื่อสิ่งพิมพ์และกราฟิก', slug: 'graphic', icon: 'ph-paint-brush' },
+      VIDEO: { label: 'วิดีโอ & สื่อมัลติมีเดีย', slug: 'video', icon: 'ph-video-camera' },
+      PR: { label: 'ข่าว & สื่อสารองค์กร', slug: 'pr', icon: 'ph-newspaper' },
+      MARKETING: { label: 'การตลาด & โฆษณา', slug: 'marketing', icon: 'ph-megaphone' },
+      EVENT: { label: 'กิจกรรม & นิทรรศการ', slug: 'event', icon: 'ph-calendar-blank' }
+    };
+
+    const PRIORITIES = {
+      URGENT: { label: 'ด่วนที่สุด', badge: 'text-rose-400 border-rose-900/60 bg-rose-950/30' },
+      HIGH: { label: 'ด่วน', badge: 'text-amber-400 border-amber-900/60 bg-amber-950/30' },
+      NORMAL: { label: 'ปกติ', badge: 'text-neutral-400 border-neutral-800 bg-neutral-900' }
+    };
+
+    const STATUSES = {
+      TODO: { label: 'ต้องทำ', badge: 'text-neutral-400 border-neutral-800 bg-neutral-900' },
+      IN_PROGRESS: { label: 'ระหว่างดำเนินการ', badge: 'text-amber-400 border-amber-900/60 bg-amber-950/30' },
+      REVIEW: { label: 'ตรวจ', badge: 'text-purple-400 border-purple-900/60 bg-purple-950/30' },
+      DONE: { label: 'เสร็จสิ้น', badge: 'text-emerald-400 border-emerald-900/60 bg-emerald-950/30' }
+    };
+
+    let tasks = [];
+    let currentUploadedFiles = [];
+    let currentUserId = 'u_woranai';
+    let currentViewMode = 'list';
+    let currentViewingTaskId = null;
+    let onlyMyTasksFilter = false;
+    let searchQuery = '';
+    let categoryFilter = 'ALL';
+    let priorityFilter = 'ALL';
+    let statusFilter = 'ALL';
+    let assigneeFilter = 'ALL';
+
+    async function callGasApi(payload) {
+      try {
+        // ใช้ fetch แบบไม่ต้องส่ง Content-Type เพื่อป้องกัน CORS Preflight (OPTIONS) ใน Google Apps Script
+        const res = await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        return await res.json();
+      } catch (err) {
+        console.warn('Google Sheets API error:', err);
+        return { error: err.toString() };
+      }
+    }
+
+    async function fetchTasksFromHost() {
+      try {
+        const res = await fetch(GOOGLE_SCRIPT_URL);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            tasks = data;
+            renderAll();
+            showToast('ซิงค์ข้อมูลจาก Google Sheets สำเร็จ', 'info');
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Google Sheets fetch warning:', err);
+      }
+      renderAll();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const userSelectorSide = document.getElementById('userSelectorSide');
+      if (userSelectorSide) {
+        userSelectorSide.innerHTML = '';
+        TEAM_MEMBERS.forEach(user => {
+          const opt = document.createElement('option');
+          opt.value = user.id;
+          opt.textContent = `${user.name.split(' ')[0]} (${user.isAdmin ? 'Admin' : 'Staff'})`;
+          userSelectorSide.appendChild(opt);
+        });
+        userSelectorSide.value = currentUserId;
+      }
+
+      const filterAssignee = document.getElementById('filterAssignee');
+      filterAssignee.innerHTML = '<option value="ALL">ผู้รับผิดชอบทั้งหมด</option>';
+      TEAM_MEMBERS.forEach(user => {
+        const opt = document.createElement('option');
+        opt.value = user.id;
+        opt.textContent = `${user.name.split(' ')[0]} (@${user.username})`;
+        filterAssignee.appendChild(opt);
+      });
+
+      const taskAssigneeInput = document.getElementById('taskAssigneeInput');
+      taskAssigneeInput.innerHTML = '';
+      TEAM_MEMBERS.forEach(user => {
+        const opt = document.createElement('option');
+        opt.value = user.id;
+        opt.textContent = `${user.name} (@${user.username})`;
+        taskAssigneeInput.appendChild(opt);
+      });
+
+      renderSidebarTeam();
+      updateUserDetails();
+
+      window.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+          e.preventDefault();
+          document.getElementById('searchInput').focus();
+        }
+      });
+
+      fetchTasksFromHost();
+    });
+
+    function handleUserChange(userId) {
+      currentUserId = userId;
+      const user = TEAM_MEMBERS.find(u => u.id === userId);
+      onlyMyTasksFilter = !user.isAdmin;
+      
+      const userSelectorSide = document.getElementById('userSelectorSide');
+      if (userSelectorSide) userSelectorSide.value = userId;
+
+      updateUserDetails();
+      renderAll();
+      showToast(`สลับเซสชันเป็น: ${user.name}`, 'info');
+    }
+
+    function updateUserDetails() {
+      const user = TEAM_MEMBERS.find(u => u.id === currentUserId);
+      const quickFilterBtn = document.getElementById('quickFilterBtn');
+      const sideUserAvatar = document.getElementById('sideUserAvatar');
+      const sideUserName = document.getElementById('sideUserName');
+      const sideUserRole = document.getElementById('sideUserRole');
+      const sideUserPermission = document.getElementById('sideUserPermission');
+
+      if (sideUserAvatar) sideUserAvatar.textContent = user.avatar;
+      if (sideUserName) sideUserName.textContent = user.name;
+      if (sideUserRole) sideUserRole.textContent = user.role;
+      if (sideUserPermission) sideUserPermission.textContent = user.isAdmin ? 'Super Admin' : 'Staff Member';
+
+      if (onlyMyTasksFilter) {
+        quickFilterBtn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded border border-cf-blue bg-cf-blue text-white font-medium text-xs transition';
+      } else {
+        quickFilterBtn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded border border-cf-border text-neutral-300 hover:bg-neutral-900 transition text-xs';
+      }
+    }
+
+    function toggleQuickFilterMyTasks() {
+      onlyMyTasksFilter = !onlyMyTasksFilter;
+      updateUserDetails();
+      renderAll();
+    }
+
+    function renderSidebarTeam() {
+      const container = document.getElementById('sidebarTeamList');
+      if (!container) return;
+      container.innerHTML = '';
+
+      TEAM_MEMBERS.forEach(member => {
+        const count = tasks.filter(t => t.assigneeId === member.id && t.status !== 'DONE').length;
+        const btn = document.createElement('button');
+        btn.onclick = () => {
+          document.getElementById('filterAssignee').value = member.id;
+          applyFilters();
+        };
+        btn.className = 'w-full flex items-center justify-between px-2.5 py-1 rounded text-neutral-400 hover:text-white hover:bg-neutral-900 transition text-left';
+        btn.innerHTML = `
+          <div class="flex items-center gap-1.5 truncate">
+            <span class="w-1.5 h-1.5 rounded-full ${member.isAdmin ? 'bg-amber-400' : 'bg-neutral-500'}"></span>
+            <span class="truncate font-sans text-xs">${member.name.split(' ')[0]}</span>
+          </div>
+          <span class="text-[10px] font-mono text-neutral-500">${count}</span>
+        `;
+        container.appendChild(btn);
+      });
+    }
+
+    function handleSearch(val) {
+      searchQuery = val.trim().toLowerCase();
+      document.getElementById('searchInput').value = val;
+      renderAll();
+    }
+
+    function setSidebarCategory(cat) {
+      categoryFilter = cat;
+      ['ALL', 'GRAPHIC', 'VIDEO', 'PR', 'MARKETING', 'EVENT'].forEach(c => {
+        const el = document.getElementById(`nav-cat-${c}`);
+        if (el) {
+          if (c === cat) {
+            el.className = 'w-full flex items-center justify-between px-2.5 py-1.5 rounded bg-neutral-900 text-white font-medium border border-neutral-800 text-left';
+          } else {
+            el.className = 'w-full flex items-center justify-between px-2.5 py-1.5 rounded text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/50 transition text-left';
+          }
+        }
+      });
+      renderAll();
+    }
+
+    function applyFilters() {
+      statusFilter = document.getElementById('filterStatus').value;
+      priorityFilter = document.getElementById('filterPriority').value;
+      assigneeFilter = document.getElementById('filterAssignee').value;
+      renderAll();
+    }
+
+    function resetFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('sidebarSearch').value = '';
+      document.getElementById('filterStatus').value = 'ALL';
+      document.getElementById('filterPriority').value = 'ALL';
+      document.getElementById('filterAssignee').value = 'ALL';
+      searchQuery = '';
+      categoryFilter = 'ALL';
+      statusFilter = 'ALL';
+      priorityFilter = 'ALL';
+      assigneeFilter = 'ALL';
+      onlyMyTasksFilter = false;
+      setSidebarCategory('ALL');
+      updateUserDetails();
+      renderAll();
+      showToast('รีเซ็ตตัวกรองทั้งหมดแล้ว', 'info');
+    }
+
+    function getFilteredTasks() {
+      return tasks.filter(task => {
+        if (onlyMyTasksFilter && task.assigneeId !== currentUserId) return false;
+        if (categoryFilter !== 'ALL' && task.category !== categoryFilter) return false;
+        if (statusFilter !== 'ALL' && task.status !== statusFilter) return false;
+        if (priorityFilter !== 'ALL' && task.priority !== priorityFilter) return false;
+        if (assigneeFilter !== 'ALL' && task.assigneeId !== assigneeFilter) return false;
+
+        if (searchQuery) {
+          const assignee = TEAM_MEMBERS.find(m => m.id === task.assigneeId);
+          const assigneeName = assignee ? assignee.name.toLowerCase() : '';
+          const matchTitle = (task.title || '').toLowerCase().includes(searchQuery);
+          const matchDesc = (task.desc || '').toLowerCase().includes(searchQuery);
+          const matchAssignee = assigneeName.includes(searchQuery);
+          if (!matchTitle && !matchDesc && !matchAssignee) return false;
+        }
+
+        return true;
+      });
+    }
+
+    function renderStats(filteredList) {
+      const total = tasks.length;
+      const inProgress = tasks.filter(t => t.status === 'IN_PROGRESS').length;
+      const review = tasks.filter(t => t.status === 'REVIEW').length;
+      const done = tasks.filter(t => t.status === 'DONE').length;
+
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statInProgress').textContent = inProgress;
+      document.getElementById('statReview').textContent = review;
+      document.getElementById('statCompleted').textContent = done;
+
+      document.getElementById('statProgressRatio').textContent = `${done} / ${total}`;
+      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+      document.getElementById('statProgressBar').style.width = `${pct}%`;
+
+      const navCountAll = document.getElementById('navCountAll');
+      if (navCountAll) navCountAll.textContent = total;
+
+      const tagContainer = document.getElementById('activeFilterTags');
+      tagContainer.innerHTML = '';
+      const tags = [];
+      if (onlyMyTasksFilter) tags.push('เฉพาะงานของฉัน');
+      if (categoryFilter !== 'ALL') tags.push(`หมวด: ${CATEGORIES[categoryFilter]?.label}`);
+      if (statusFilter !== 'ALL') tags.push(`สถานะ: ${STATUSES[statusFilter]?.label}`);
+      if (priorityFilter !== 'ALL') tags.push(`ความสำคัญ: ${PRIORITIES[priorityFilter]?.label}`);
+      if (assigneeFilter !== 'ALL') {
+        const m = TEAM_MEMBERS.find(u => u.id === assigneeFilter);
+        tags.push(`ผู้รับผิดชอบ: @${m?.username}`);
+      }
+      if (searchQuery) tags.push(`"${searchQuery}"`);
+
+      if (tags.length > 0) {
+        tagContainer.innerHTML = '<span class="text-neutral-500 font-mono text-[10px]">ACTIVE FILTERS:</span>';
+        tags.forEach(t => {
+          const span = document.createElement('span');
+          span.className = 'bg-neutral-900 text-neutral-300 font-mono text-[10px] px-2 py-0.5 rounded border border-neutral-800 flex items-center gap-1';
+          span.textContent = t;
+          tagContainer.appendChild(span);
+        });
+      }
+
+      document.getElementById('paginationInfo').textContent = `Showing 1-${filteredList.length} of ${filteredList.length}`;
+    }
+
+    function switchView(mode) {
+      currentViewMode = mode;
+      const listView = document.getElementById('listViewSection');
+      const kanbanView = document.getElementById('kanbanViewSection');
+      const listBtn = document.getElementById('viewListBtn');
+      const kanbanBtn = document.getElementById('viewKanbanBtn');
+
+      if (mode === 'list') {
+        listView.classList.remove('hidden');
+        kanbanView.classList.add('hidden');
+        listBtn.className = 'px-2 py-1 rounded text-xs text-white bg-neutral-800';
+        kanbanBtn.className = 'px-2 py-1 rounded text-xs text-neutral-400 hover:text-white';
+      } else {
+        listView.classList.add('hidden');
+        kanbanView.classList.remove('hidden');
+        kanbanBtn.className = 'px-2 py-1 rounded text-xs text-white bg-neutral-800';
+        listBtn.className = 'px-2 py-1 rounded text-xs text-neutral-400 hover:text-white';
+      }
+      renderAll();
+    }
+
+    function renderList(tasksToRender) {
+      const container = document.getElementById('taskListContainer');
+      const emptyState = document.getElementById('emptyListState');
+      container.innerHTML = '';
+
+      if (tasksToRender.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      emptyState.classList.add('hidden');
+
+      tasksToRender.forEach(task => {
+        const isMine = task.assigneeId === currentUserId;
+        const assignee = TEAM_MEMBERS.find(m => m.id === task.assigneeId) || { name: 'ยังไม่ระบุ', username: 'unassigned' };
+        const category = CATEGORIES[task.category] || { label: task.category, slug: 'general', icon: 'ph-app-window' };
+        const priority = PRIORITIES[task.priority] || PRIORITIES.NORMAL;
+        const status = STATUSES[task.status] || STATUSES.TODO;
+
+        const totalSub = task.subtasks ? task.subtasks.length : 0;
+        const doneSub = task.subtasks ? task.subtasks.filter(s => s.done).length : 0;
+        const totalFiles = task.attachments ? task.attachments.length : 0;
+
+        const card = document.createElement('div');
+        card.className = `bg-cf-card hover:bg-cf-cardHover border ${isMine ? 'border-cf-blue/70 ring-1 ring-cf-blue/30' : 'border-cf-border'} rounded-lg p-3.5 transition group cursor-pointer space-y-2.5`;
+        card.onclick = () => openViewModal(task.id);
+
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-start gap-3 min-w-0 flex-1">
+              <div class="w-8 h-8 rounded bg-neutral-900 border border-neutral-800 text-cf-blue flex items-center justify-center shrink-0 mt-0.5 group-hover:border-cf-blue/50 transition">
+                <i class="ph-bold ${category.icon} text-base"></i>
+              </div>
+
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-2 mb-2">
+                  <h3 class="font-bold text-white text-sm leading-relaxed break-words group-hover:text-cf-blue transition">
+                    ${escapeHtml(task.title)}
+                  </h3>
+                  ${isMine ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-cf-blue/20 text-cf-blue border border-cf-blue/40 shrink-0">ASSIGNED TO YOU</span>' : ''}
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2 text-xs text-neutral-400 font-mono text-[11px] pt-1">
+                  <span class="text-neutral-400 font-sans">${category.label}</span>
+                  <span>&bull;</span>
+                  <span class="text-neutral-400">@${assignee.username}</span>
+                  <span>&bull;</span>
+                  <span class="${isDeadlineNear(task.deadline) && task.status !== 'DONE' ? 'text-rose-400 font-semibold' : 'text-neutral-500'}">
+                    Due: ${task.deadline}
+                  </span>
+                  ${totalFiles > 0 ? `
+                    <span>&bull;</span>
+                    <span class="text-sky-400 flex items-center gap-0.5"><i class="ph-bold ph-paperclip"></i> ${totalFiles} ไฟล์</span>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-neutral-800 bg-neutral-950 text-neutral-300 font-mono text-[11px]">
+                <i class="ph-bold ph-user-circle text-neutral-500"></i>
+                <span>${assignee.username}</span>
+              </span>
+
+              <span class="px-2 py-0.5 rounded text-[11px] font-mono border ${priority.badge}">
+                ${priority.label}
+              </span>
+
+              <span class="px-2 py-0.5 rounded text-[11px] font-mono border ${status.badge}">
+                ${status.label}
+              </span>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-cf-border/80 flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-400 font-mono text-[11px]">
+            <div class="flex items-center gap-1.5 truncate max-w-xl text-neutral-400">
+              <i class="ph-bold ph-git-commit text-neutral-500 shrink-0"></i>
+              <span class="truncate font-sans text-neutral-300">${escapeHtml(task.notes && task.notes.length > 0 ? task.notes[0].text : (task.desc || 'ไม่มีบันทึกล่าสุด'))}</span>
+            </div>
+
+            ${totalSub > 0 ? `
+              <div class="flex items-center gap-2 shrink-0 text-neutral-400">
+                <i class="ph-bold ph-check-square"></i>
+                <span>${doneSub}/${totalSub} tasks</span>
+              </div>
+            ` : `
+              <div class="text-neutral-500 text-[10px]">
+                created: ${task.createdAt || 'recent'}
+              </div>
+            `}
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function renderKanban(tasksToRender) {
+      const cols = {
+        TODO: document.getElementById('col-TODO'),
+        IN_PROGRESS: document.getElementById('col-IN_PROGRESS'),
+        REVIEW: document.getElementById('col-REVIEW'),
+        DONE: document.getElementById('col-DONE')
+      };
+
+      Object.keys(cols).forEach(k => {
+        cols[k].innerHTML = '';
+        document.getElementById(`count-${k}`).textContent = '0';
+      });
+
+      const counts = { TODO: 0, IN_PROGRESS: 0, REVIEW: 0, DONE: 0 };
+
+      tasksToRender.forEach(task => {
+        const targetCol = cols[task.status] || cols.TODO;
+        counts[task.status] = (counts[task.status] || 0) + 1;
+
+        const isMine = task.assigneeId === currentUserId;
+        const assignee = TEAM_MEMBERS.find(m => m.id === task.assigneeId) || { name: '?', username: 'unassigned' };
+        const category = CATEGORIES[task.category] || { label: task.category };
+        const priority = PRIORITIES[task.priority] || PRIORITIES.NORMAL;
+
+        const card = document.createElement('div');
+        card.className = `bg-cf-card hover:bg-cf-cardHover border ${isMine ? 'border-cf-blue/70 ring-1 ring-cf-blue/30' : 'border-cf-border'} rounded p-3 text-xs space-y-2 cursor-pointer transition`;
+        card.onclick = () => openViewModal(task.id);
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between text-[10px] font-mono">
+            <span class="text-neutral-500">${category.label}</span>
+            <span class="px-1.5 py-0.2 rounded border ${priority.badge}">${priority.label}</span>
+          </div>
+          <div class="font-medium text-white leading-snug">
+            ${escapeHtml(task.title)}
+          </div>
+          <div class="pt-1.5 border-t border-cf-border flex items-center justify-between text-[11px] font-mono text-neutral-400">
+            <span class="text-neutral-300 truncate">@${assignee.username}</span>
+            <span class="${isDeadlineNear(task.deadline) && task.status !== 'DONE' ? 'text-rose-400 font-semibold' : 'text-neutral-500'}">${task.deadline}</span>
+          </div>
+        `;
+
+        targetCol.appendChild(card);
+      });
+
+      Object.keys(counts).forEach(k => {
+        const el = document.getElementById(`count-${k}`);
+        if (el) el.textContent = counts[k];
+      });
+    }
+
+    function renderAll() {
+      const filtered = getFilteredTasks();
+      renderStats(filtered);
+      renderSidebarTeam();
+      if (currentViewMode === 'list') {
+        renderList(filtered);
+      } else {
+        renderKanban(filtered);
+      }
+    }
+
+    function openTaskModal(taskId = null) {
+      const modal = document.getElementById('taskModal');
+      const container = document.getElementById('taskModalContainer');
+      const form = document.getElementById('taskForm');
+      const subtaskContainer = document.getElementById('subtaskListContainer');
+      subtaskContainer.innerHTML = '';
+      currentUploadedFiles = [];
+      renderUploadedFilesList();
+      form.reset();
+
+      if (taskId) {
+        const task = tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        document.getElementById('modalTitle').textContent = 'แก้ไขข้อมูลภารกิจ (Edit Task)';
+        document.getElementById('submitBtnText').textContent = 'บันทึกการแก้ไข';
+        document.getElementById('formTaskId').value = task.id;
+        document.getElementById('taskTitleInput').value = task.title;
+        document.getElementById('taskCategoryInput').value = task.category;
+        document.getElementById('taskAssigneeInput').value = task.assigneeId;
+        document.getElementById('taskPriorityInput').value = task.priority;
+        document.getElementById('taskDeadlineInput').value = task.deadline;
+        document.getElementById('taskStatusInput').value = task.status;
+        document.getElementById('taskDescInput').value = task.desc || '';
+
+        currentUploadedFiles = [...(task.attachments || [])];
+        renderUploadedFilesList();
+
+        if (task.subtasks) {
+          task.subtasks.forEach(s => addSubtaskInput(s.text, s.done));
+        }
+      } else {
+        document.getElementById('modalTitle').textContent = 'มอบหมายงานใหม่ (Create Task)';
+        document.getElementById('submitBtnText').textContent = 'บันทึกและแจกจ่ายงาน';
+        document.getElementById('formTaskId').value = '';
+
+        const targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + 7);
+        document.getElementById('taskDeadlineInput').value = targetDate.toISOString().split('T')[0];
+
+        const firstStaff = TEAM_MEMBERS.find(u => !u.isAdmin) || TEAM_MEMBERS[0];
+        document.getElementById('taskAssigneeInput').value = firstStaff.id;
+
+        addSubtaskInput('ร่างข้อเสนอแนวคิดและกำหนดรายละเอียด');
+        addSubtaskInput('ส่งตรวจรอบดราฟต์');
+      }
+
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        container.classList.remove('scale-98');
+      }, 10);
+    }
+
+    function closeTaskModal() {
+      const modal = document.getElementById('taskModal');
+      const container = document.getElementById('taskModalContainer');
+      modal.classList.add('opacity-0');
+      container.classList.add('scale-98');
+      setTimeout(() => modal.classList.add('hidden'), 150);
+    }
+
+    function addSubtaskInput(text = '', isDone = false) {
+      const container = document.getElementById('subtaskListContainer');
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-2';
+      row.innerHTML = `
+        <i class="ph ph-check-square text-neutral-500 text-xs"></i>
+        <input type="text" value="${escapeHtml(text)}" placeholder="ระบุขั้นตอนย่อย..." class="flex-1 px-2.5 py-1 text-xs rounded bg-neutral-900 border border-cf-border text-white placeholder-neutral-600 focus:outline-none focus:border-cf-blue subtask-item-input font-sans">
+        <button type="button" onclick="this.parentElement.remove()" class="text-neutral-500 hover:text-rose-400 p-1">
+          <i class="ph-bold ph-trash text-xs"></i>
+        </button>
+      `;
+      row.dataset.done = isDone;
+      container.appendChild(row);
+    }
+
+    function extractGoogleDriveId(url) {
+      if (!url) return null;
+      const m = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
+                url.match(/[?&]id=([a-zA-Z0-9_-]+)/) ||
+                url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      return m ? m[1] : null;
+    }
+
+    function isImageAttachment(file) {
+      if (!file) return false;
+      if (file.previewUrl) return true;
+      const isImgExt = file.name && /\.(jpg|jpeg|png|gif|webp|svg|bmp|jfif)$/i.test(file.name);
+      const isImgUrl = file.url && /\.(jpg|jpeg|png|gif|webp|svg|bmp|jfif)(\?.*)?$/i.test(file.url);
+      const isDrive = file.url && (file.url.includes('drive.google.com') || file.id);
+      return isImgExt || isImgUrl || (isDrive && isImgExt);
+    }
+
+    function getAttachmentThumbnail(file) {
+      if (!file) return null;
+      if (file.previewUrl) return file.previewUrl;
+      if (file.thumbnailUrl) return file.thumbnailUrl;
+
+      const driveId = file.id || extractGoogleDriveId(file.url);
+      if (driveId) {
+        // ใช้ Google CDN (lh3.googleusercontent.com) เพื่อให้โหลดภาพได้ทันทีโดยไม่ติด Cross-Origin
+        return `https://lh3.googleusercontent.com/d/${driveId}`;
+      }
+
+      if (file.url && /\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(file.url)) {
+        return file.url;
+      }
+      return null;
+    }
+
+    async function uploadAttachmentToDrive() {
+      const fileInput = document.getElementById('taskFileInput');
+      if (!fileInput.files || fileInput.files.length === 0) {
+        showToast('กรุณาเลือกไฟล์ที่ต้องการอัปโหลด', 'warning');
+        return;
+      }
+
+      const file = fileInput.files[0];
+      if (file.size > 25 * 1024 * 1024) {
+        showToast('ไฟล์มีขนาดเกิน 25MB แนะนำให้ใช้ช่องแปะลิงก์ Google Drive ด้านล่างแทนครับ', 'warning');
+        return;
+      }
+
+      const btn = document.getElementById('btnUploadFile');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> กำลังอัปโหลด...';
+
+      const reader = new FileReader();
+      reader.onload = async function() {
+        try {
+          const base64Data = reader.result.split(',')[1];
+          const isImg = file.type.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(file.name);
+          const payload = {
+            action: 'upload_file',
+            filename: file.name,
+            mimeType: file.type,
+            base64: base64Data
+          };
+
+          const res = await callGasApi(payload);
+          if (res && res.success && res.file) {
+            currentUploadedFiles.push({
+              name: res.file.name,
+              url: res.file.url,
+              id: res.file.id,
+              thumbnailUrl: res.file.thumbnailUrl || (res.file.id ? `https://drive.google.com/thumbnail?id=${res.file.id}&sz=w500` : null),
+              previewUrl: isImg ? reader.result : null,
+              type: 'drive'
+            });
+            renderUploadedFilesList();
+            fileInput.value = '';
+            showToast('อัปโหลดไฟล์เข้า Google Drive สำเร็จ', 'success');
+          } else {
+            const errMsg = (res && res.error) ? res.error : 'โปรดตรวจการให้อนุญาตสิทธิ์ Google Drive ใน Script';
+            showToast(`อัปโหลดไม่สำเร็จ: ${errMsg}`, 'warning');
+          }
+        } catch (err) {
+          showToast('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์', 'warning');
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="ph-bold ph-cloud-arrow-up"></i> อัปโหลด';
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function addExternalLink() {
+      const urlInput = document.getElementById('externalLinkInput');
+      const nameInput = document.getElementById('externalLinkNameInput');
+      const url = urlInput.value.trim();
+      let name = nameInput.value.trim();
+
+      if (!url) {
+        showToast('กรุณาระบุ URL ที่ต้องการแนบ', 'warning');
+        return;
+      }
+
+      if (!name) {
+        name = url.replace(/https?:\/\/(www\.)?/, '').slice(0, 30);
+      }
+
+      const driveMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      let thumb = null;
+      if (driveMatch && driveMatch[1]) {
+        thumb = `https://drive.google.com/thumbnail?id=${driveMatch[1]}&sz=w500`;
+      } else if (/\.(jpg|jpeg|png|gif|webp|svg)(\?.*)?$/i.test(url)) {
+        thumb = url;
+      }
+
+      currentUploadedFiles.push({
+        name: name,
+        url: url,
+        thumbnailUrl: thumb,
+        type: 'link'
+      });
+
+      renderUploadedFilesList();
+      urlInput.value = '';
+      nameInput.value = '';
+      showToast('เพิ่มลิงก์แนบเรียบร้อย', 'success');
+    }
+
+    function renderUploadedFilesList() {
+      const container = document.getElementById('uploadedFilesList');
+      if (!container) return;
+      container.innerHTML = '';
+
+      currentUploadedFiles.forEach((file, idx) => {
+        const thumb = getAttachmentThumbnail(file);
+        const item = document.createElement('div');
+        item.className = 'flex items-center justify-between p-1.5 rounded bg-neutral-950 border border-neutral-800 font-mono text-[11px] gap-2';
+        
+        item.innerHTML = `
+          <div class="flex items-center gap-2 truncate min-w-0 flex-1">
+            ${thumb ? `
+              <img src="${thumb}" alt="${escapeHtml(file.name)}" class="w-8 h-8 rounded object-cover border border-neutral-700 shrink-0 bg-neutral-900" onerror="this.style.display='none'">
+            ` : `
+              <div class="w-8 h-8 rounded bg-neutral-900 border border-neutral-800 flex items-center justify-center shrink-0 text-neutral-400">
+                <i class="ph-bold ${file.type === 'link' ? 'ph-link' : 'ph-file'} text-xs"></i>
+              </div>
+            `}
+            <div class="truncate">
+              <div class="text-sky-400 truncate text-xs">${escapeHtml(file.name)}</div>
+              <div class="text-[10px] text-neutral-500 truncate">${file.type === 'drive' ? 'Google Drive' : 'External Link'}</div>
+            </div>
+          </div>
+          <button type="button" onclick="removeUploadedFile(${idx})" class="text-neutral-500 hover:text-rose-400 p-1 shrink-0" title="ลบไฟล์นี้">
+            <i class="ph-bold ph-trash text-xs"></i>
+          </button>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function removeUploadedFile(index) {
+      currentUploadedFiles.splice(index, 1);
+      renderUploadedFilesList();
+    }
+
+    async function handleTaskFormSubmit(e) {
+      e.preventDefault();
+      const taskId = document.getElementById('formTaskId').value;
+      const title = document.getElementById('taskTitleInput').value.trim();
+      const category = document.getElementById('taskCategoryInput').value;
+      const assigneeId = document.getElementById('taskAssigneeInput').value;
+      const priority = document.getElementById('taskPriorityInput').value;
+      const deadline = document.getElementById('taskDeadlineInput').value;
+      const status = document.getElementById('taskStatusInput').value;
+      const desc = document.getElementById('taskDescInput').value.trim();
+
+      const subtaskInputs = document.querySelectorAll('.subtask-item-input');
+      const subtasks = [];
+      subtaskInputs.forEach(input => {
+        const val = input.value.trim();
+        if (val) {
+          const isDone = input.closest('div').dataset.done === 'true';
+          subtasks.push({ text: val, done: isDone });
+        }
+      });
+
+      if (taskId) {
+        // แก้ไขงานเดิม
+        const payload = {
+          action: 'update',
+          id: taskId,
+          title,
+          category,
+          assigneeId,
+          priority,
+          deadline,
+          status,
+          desc,
+          subtasks,
+          attachments: currentUploadedFiles
+        };
+
+        const idx = tasks.findIndex(t => t.id === taskId);
+        if (idx !== -1) {
+          tasks[idx] = { ...tasks[idx], ...payload };
+          renderAll();
+        }
+        closeTaskModal();
+        showToast('กำลังบันทึกลง Google Sheets...', 'info');
+
+        await callGasApi(payload);
+        showToast('อัปเดตข้อมูลลง Google Sheets เรียบร้อย', 'success');
+      } else {
+        // มอบหมายงานใหม่
+        const newTaskId = 'task-' + Date.now();
+        const nowStr = new Date().toISOString().split('T')[0];
+        const payload = {
+          action: 'create',
+          id: newTaskId,
+          title,
+          category,
+          assigneeId,
+          priority,
+          deadline,
+          status,
+          desc,
+          subtasks,
+          notes: [],
+          attachments: currentUploadedFiles,
+          createdAt: nowStr,
+          updatedAt: nowStr
+        };
+
+        // Optimistic UI update แสดงบนหน้าเว็บทันที
+        tasks.unshift(payload);
+        renderAll();
+        closeTaskModal();
+        showToast('กำลังมอบหมายงานลง Google Sheets...', 'info');
+
+        await callGasApi(payload);
+        showToast('มอบหมายงานลง Google Sheets เรียบร้อยแล้ว', 'success');
+      }
+    }
+
+    function openViewModal(taskId) {
+      currentViewingTaskId = taskId;
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      const modal = document.getElementById('viewModal');
+      const container = document.getElementById('viewModalContainer');
+      const assignee = TEAM_MEMBERS.find(m => m.id === task.assigneeId) || { name: 'ยังไม่ระบุ', role: '-', username: 'unassigned', avatar: '?' };
+      const category = CATEGORIES[task.category] || { label: task.category };
+      const priority = PRIORITIES[task.priority] || PRIORITIES.NORMAL;
+
+      document.getElementById('viewTaskCategoryBadge').textContent = category.label;
+      document.getElementById('viewTaskPriorityBadge').textContent = priority.label;
+      document.getElementById('viewTaskPriorityBadge').className = `px-2 py-0.5 rounded text-[11px] font-mono border ${priority.badge}`;
+
+      document.getElementById('viewTaskTitle').textContent = task.title;
+      document.getElementById('viewTaskIdText').textContent = task.id;
+      document.getElementById('viewTaskCreatedAt').textContent = task.createdAt || '-';
+      document.getElementById('viewTaskDeadline').textContent = task.deadline;
+
+      document.getElementById('viewAssigneeAvatar').textContent = assignee.avatar;
+      document.getElementById('viewAssigneeName').textContent = assignee.name;
+      document.getElementById('viewAssigneeRole').textContent = `@${assignee.username} &bull; ${assignee.role}`;
+
+      const indEl = document.getElementById('viewAssigneeStatusIndicator');
+      if (task.assigneeId === currentUserId) {
+        indEl.innerHTML = '<span class="bg-cf-blue/20 text-cf-blue px-2 py-0.5 rounded font-mono text-[10px] border border-cf-blue/40">YOUR TASK</span>';
+      } else {
+        indEl.innerHTML = '<span class="text-neutral-500 font-mono text-[10px]">TEAM MEMBER</span>';
+      }
+
+      document.getElementById('viewTaskDesc').textContent = task.desc || 'ไม่มีรายละเอียดเพิ่มเติม';
+
+      // Attachments render
+      const attachSection = document.getElementById('viewAttachmentsSection');
+      const attachList = document.getElementById('viewAttachmentsList');
+      const attachImageGrid = document.getElementById('viewAttachmentsImageGrid');
+
+      if (task.attachments && task.attachments.length > 0) {
+        attachSection.classList.remove('hidden');
+        attachList.innerHTML = '';
+        attachImageGrid.innerHTML = '';
+
+        task.attachments.forEach(file => {
+          const thumb = getAttachmentThumbnail(file);
+          const isImg = isImageAttachment(file);
+          const driveId = file.id || extractGoogleDriveId(file.url);
+
+          if (isImg) {
+            // ดึง URL สำหรับแสดงภาพตัวอย่าง
+            const imgSrc = thumb || (driveId ? `https://lh3.googleusercontent.com/d/${driveId}` : file.url);
+            const fallbackDriveUrl = driveId ? `https://drive.google.com/thumbnail?id=${driveId}&sz=w1000` : '';
+
+            const card = document.createElement('div');
+            card.className = 'rounded-lg border border-cf-border bg-neutral-900/60 overflow-hidden shadow-md';
+            card.innerHTML = `
+              <div class="relative group bg-neutral-950 flex items-center justify-center p-2 min-h-[180px] max-h-[380px] overflow-hidden">
+                <img src="${imgSrc}" alt="${escapeHtml(file.name)}" 
+                     class="max-h-[360px] w-auto max-w-full object-contain rounded transition-transform duration-200 group-hover:scale-[1.01]" 
+                     loading="lazy"
+                     onerror="if('${fallbackDriveUrl}' && this.src !== '${fallbackDriveUrl}') { this.src='${fallbackDriveUrl}'; } else { this.parentElement.innerHTML='<div class=\\'p-6 text-center text-neutral-400 text-xs font-mono\\'><i class=\\'ph-bold ph-image text-2xl mb-1 text-cf-blue block\\'></i>คลิกปุ่มด้านล่างเพื่อเปิดดูภาพบน Google Drive</div>'; }">
+              </div>
+              <div class="p-2.5 bg-neutral-900/90 border-t border-cf-border flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2 truncate min-w-0">
+                  <i class="ph-bold ph-image text-cf-blue shrink-0 text-sm"></i>
+                  <span class="truncate text-white font-medium text-xs font-sans">${escapeHtml(file.name)}</span>
+                </div>
+                <a href="${file.url}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded bg-cf-blue hover:bg-cf-blueHover text-white text-xs font-sans flex items-center gap-1.5 shrink-0 transition shadow-sm">
+                  <span>เปิดดูภาพเต็ม</span>
+                  <i class="ph-bold ph-arrow-square-out text-xs"></i>
+                </a>
+              </div>
+            `;
+            attachImageGrid.appendChild(card);
+          } else {
+            // Render as File Link Row สำหรับไฟล์ประเภทอื่น (เช่น PDF, ลิงก์โฟลเดอร์)
+            const a = document.createElement('a');
+            a.href = file.url;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            a.className = 'flex items-center justify-between p-2 rounded bg-neutral-900 border border-neutral-800 hover:border-cf-blue transition text-xs font-mono text-sky-400 group';
+            a.innerHTML = `
+              <div class="flex items-center gap-2 truncate">
+                <i class="ph-bold ${file.type === 'link' ? 'ph-link' : 'ph-file-text'} text-neutral-400 group-hover:text-cf-blue"></i>
+                <span class="truncate text-neutral-200 group-hover:text-white font-sans">${escapeHtml(file.name)}</span>
+              </div>
+              <span class="text-[10px] text-neutral-500 group-hover:text-neutral-300 shrink-0 flex items-center gap-1 font-sans">
+                เปิดดูไฟล์ <i class="ph-bold ph-arrow-square-out"></i>
+              </span>
+            `;
+            attachList.appendChild(a);
+          }
+        });
+      } else {
+        attachSection.classList.add('hidden');
+      }
+
+      renderStatusButtons(task);
+      renderViewChecklist(task);
+      renderNotesList(task);
+
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        container.classList.remove('scale-98');
+      }, 10);
+    }
+
+    function closeViewModal() {
+      const modal = document.getElementById('viewModal');
+      const container = document.getElementById('viewModalContainer');
+      modal.classList.add('opacity-0');
+      container.classList.add('scale-98');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        currentViewingTaskId = null;
+      }, 150);
+    }
+
+    function renderStatusButtons(task) {
+      const container = document.getElementById('statusTransitionButtons');
+      container.innerHTML = '';
+
+      const list = [
+        { key: 'TODO', label: 'ต้องทำ' },
+        { key: 'IN_PROGRESS', label: 'ระหว่างดำเนินการ' },
+        { key: 'REVIEW', label: 'ตรวจ' },
+        { key: 'DONE', label: 'เสร็จสิ้น' }
+      ];
+
+      list.forEach(s => {
+        const isCurrent = task.status === s.key;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.onclick = () => updateTaskStatus(task.id, s.key);
+
+        if (isCurrent) {
+          btn.className = 'py-1.5 px-2 rounded text-xs font-mono font-bold bg-cf-blue text-white cursor-default border border-cf-blue text-center';
+          btn.textContent = `✓ ${s.label}`;
+        } else {
+          btn.className = 'py-1.5 px-2 rounded text-xs font-mono bg-neutral-950 text-neutral-400 hover:text-white hover:bg-neutral-800 border border-cf-border transition text-center';
+          btn.textContent = s.label;
+        }
+
+        container.appendChild(btn);
+      });
+    }
+
+    async function updateTaskStatus(taskId, newStatus) {
+      const task = tasks.find(t => t.id === taskId);
+      if (!task || task.status === newStatus) return;
+
+      const user = TEAM_MEMBERS.find(u => u.id === currentUserId);
+      const timeStr = formatShortTime(new Date());
+
+      task.status = newStatus;
+      if (!task.notes) task.notes = [];
+      task.notes.unshift({
+        author: user.name,
+        time: timeStr,
+        text: `เปลี่ยนสถานะงานเป็น: ${STATUSES[newStatus]?.label || newStatus}`
+      });
+
+      renderStatusButtons(task);
+      renderNotesList(task);
+      renderAll();
+      showToast(`เปลี่ยนสถานะเป็น "${STATUSES[newStatus]?.label}" แล้ว`, 'success');
+
+      // ส่งอัปเดตสถานะไปที่ Google Sheets
+      await callGasApi({
+        action: 'status',
+        id: taskId,
+        status: newStatus,
+        author: user.name
+      });
+    }
+
+    function renderViewChecklist(task) {
+      const listEl = document.getElementById('viewChecklistItems');
+      const progressText = document.getElementById('checklistProgressText');
+      listEl.innerHTML = '';
+
+      if (!task.subtasks || task.subtasks.length === 0) {
+        listEl.innerHTML = '<p class="text-xs text-neutral-500 italic font-mono">no checklist items</p>';
+        progressText.textContent = '0/0';
+        return;
+      }
+
+      const doneCount = task.subtasks.filter(s => s.done).length;
+      progressText.textContent = `${doneCount}/${task.subtasks.length}`;
+
+      task.subtasks.forEach((sub, idx) => {
+        const item = document.createElement('div');
+        item.className = 'flex items-center gap-2 p-2 bg-neutral-900/60 hover:bg-neutral-900 rounded border border-cf-border transition cursor-pointer';
+        item.onclick = () => toggleSubtask(task.id, idx);
+
+        item.innerHTML = `
+          <input type="checkbox" ${sub.done ? 'checked' : ''} class="w-3.5 h-3.5 rounded text-cf-blue bg-neutral-950 border-neutral-700 pointer-events-none">
+          <span class="text-xs ${sub.done ? 'line-through text-neutral-500' : 'text-neutral-200'} flex-1 font-sans">
+            ${escapeHtml(sub.text)}
+          </span>
+        `;
+        listEl.appendChild(item);
+      });
+    }
+
+    async function toggleSubtask(taskId, subtaskIdx) {
+      const task = tasks.find(t => t.id === taskId);
+      if (!task || !task.subtasks || !task.subtasks[subtaskIdx]) return;
+
+      task.subtasks[subtaskIdx].done = !task.subtasks[subtaskIdx].done;
+      renderViewChecklist(task);
+      renderAll();
+
+      await callGasApi({
+        action: 'toggle_subtask',
+        id: taskId,
+        subtaskIndex: subtaskIdx
+      });
+    }
+
+    function renderNotesList(task) {
+      const container = document.getElementById('viewNotesList');
+      container.innerHTML = '';
+
+      if (!task.notes || task.notes.length === 0) {
+        container.innerHTML = '<p class="text-neutral-500 italic text-[11px]">no activity logs yet</p>';
+        return;
+      }
+
+      task.notes.forEach(note => {
+        const div = document.createElement('div');
+        div.className = 'p-2 bg-neutral-900/40 rounded border border-cf-border';
+        div.innerHTML = `
+          <div class="flex items-center justify-between text-neutral-500 mb-0.5 text-[10px]">
+            <span class="text-neutral-300 font-bold">${escapeHtml(note.author)}</span>
+            <span>${note.time}</span>
+          </div>
+          <div class="text-neutral-200 font-sans text-xs">${escapeHtml(note.text)}</div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    async function addNoteToCurrentTask() {
+      if (!currentViewingTaskId) return;
+      const input = document.getElementById('newNoteInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const task = tasks.find(t => t.id === currentViewingTaskId);
+      if (!task) return;
+
+      const user = TEAM_MEMBERS.find(u => u.id === currentUserId);
+      const newNote = {
+        author: user.name,
+        time: formatShortTime(new Date()),
+        text: text
+      };
+
+      if (!task.notes) task.notes = [];
+      task.notes.unshift(newNote);
+      input.value = '';
+      renderNotesList(task);
+      showToast('บันทึกความคืบหน้าแล้ว', 'success');
+
+      await callGasApi({
+        action: 'add_note',
+        id: task.id,
+        note: newNote
+      });
+    }
+
+    function editCurrentViewingTask() {
+      if (!currentViewingTaskId) return;
+      const id = currentViewingTaskId;
+      closeViewModal();
+      openTaskModal(id);
+    }
+
+    function deleteCurrentViewingTask() {
+      if (!currentViewingTaskId) return;
+      const id = currentViewingTaskId;
+      const task = tasks.find(t => t.id === id);
+
+      showCustomConfirm(
+        'Delete Task Confirmation',
+        `คุณแน่ใจหรือไม่ว่าต้องการลบภารกิจ "${task ? task.title : ''}"? การกระทำนี้ไม่สามารถย้อนกลับได้`,
+        async () => {
+          tasks = tasks.filter(t => t.id !== id);
+          closeViewModal();
+          renderAll();
+          showToast('ลบภารกิจเรียบร้อยแล้ว', 'info');
+
+          await callGasApi({
+            action: 'delete',
+            id: id
+          });
+        }
+      );
+    }
+
+    let confirmCallback = null;
+    function showCustomConfirm(title, desc, onConfirm) {
+      confirmCallback = onConfirm;
+      document.getElementById('confirmModalTitle').textContent = title;
+      document.getElementById('confirmModalDesc').textContent = desc;
+
+      const modal = document.getElementById('customConfirmModal');
+      modal.classList.remove('hidden');
+      setTimeout(() => modal.classList.remove('opacity-0'), 10);
+    }
+
+    document.getElementById('confirmCancelBtn').onclick = () => {
+      const modal = document.getElementById('customConfirmModal');
+      modal.classList.add('opacity-0');
+      setTimeout(() => modal.classList.add('hidden'), 150);
+      confirmCallback = null;
+    };
+
+    document.getElementById('confirmActionBtn').onclick = () => {
+      if (confirmCallback) confirmCallback();
+      const modal = document.getElementById('customConfirmModal');
+      modal.classList.add('opacity-0');
+      setTimeout(() => modal.classList.add('hidden'), 150);
+      confirmCallback = null;
+    };
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+
+      const borders = {
+        success: 'border-emerald-800 bg-neutral-950 text-emerald-300',
+        info: 'border-cf-border bg-neutral-950 text-neutral-200',
+        warning: 'border-amber-800 bg-neutral-950 text-amber-300'
+      };
+
+      toast.className = `px-3 py-2 rounded border shadow-xl text-xs font-mono transition-all duration-200 transform translate-y-2 opacity-0 flex items-center gap-2 pointer-events-auto ${borders[type] || borders.info}`;
+      toast.innerHTML = `<i class="ph-bold ph-bell-simple text-cf-blue"></i> <span>${escapeHtml(message)}</span>`;
+
+      container.appendChild(toast);
+      setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 200);
+      }, 3000);
+    }
+
+    function isDeadlineNear(deadlineStr) {
+      if (!deadlineStr) return false;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const target = new Date(deadlineStr);
+      const diffDays = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+      return diffDays <= 2;
+    }
+
+    function formatShortTime(date) {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const day = date.getDate();
+      const month = months[date.getMonth()];
+      const hours = String(date.getHours()).padStart(2, '0');
+      const mins = String(date.getMinutes()).padStart(2, '0');
+      return `${day} ${month} ${hours}:${mins}`;
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>
