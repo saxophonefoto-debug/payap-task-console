@@ -108,9 +108,9 @@
   <div class="flex flex-1 w-full overflow-hidden">
     
     <!-- LEFT SIDEBAR -->
-    <aside class="hidden lg:flex flex-col w-60 border-r border-cf-border bg-cf-sidebar shrink-0 p-3 space-y-4 select-none">
+    <aside class="hidden lg:flex flex-col w-64 border-r border-cf-border bg-cf-sidebar shrink-0 p-3 space-y-4 select-none overflow-y-auto">
       
-      <!-- Quick Search Input -->
+      <!-- Quick Search / Command Palette Input -->
       <div class="relative">
         <i class="ph-bold ph-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-500 text-xs"></i>
         <input type="text" id="sidebarSearch" oninput="handleSearch(this.value)" placeholder="ค้นหาภารกิจ..." class="w-full bg-neutral-950 border border-cf-border rounded text-xs pl-8 pr-12 py-1.5 text-neutral-300 placeholder-neutral-600 focus:outline-none focus:border-cf-blue font-sans">
@@ -126,17 +126,40 @@
           </button>
         </div>
 
-        <!-- Section: Categories -->
+        <!-- Section: Main Page Switcher (Active vs Completed) -->
         <div class="space-y-1">
+          <div class="px-2.5 text-[11px] font-mono text-neutral-500 uppercase tracking-wider">
+            <span>มุมมองงานหลัก</span>
+          </div>
+
+          <button onclick="switchMainTab('active')" id="sideTabActive" class="w-full flex items-center justify-between px-2.5 py-2 rounded-md bg-cf-blue/15 text-white font-medium border border-cf-blue/40 text-left transition">
+            <div class="flex items-center gap-2 truncate">
+              <i class="ph-bold ph-lightning text-cf-blue text-sm"></i>
+              <span class="truncate">ภารกิจที่กำลังทำ</span>
+            </div>
+            <span id="sideActiveCount" class="text-[10px] font-mono bg-cf-blue/30 text-sky-200 px-1.5 py-0.5 rounded font-bold">0</span>
+          </button>
+
+          <button onclick="switchMainTab('completed')" id="sideTabCompleted" class="w-full flex items-center justify-between px-2.5 py-2 rounded-md text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/60 transition text-left border border-transparent">
+            <div class="flex items-center gap-2 truncate">
+              <i class="ph-bold ph-check-circle text-emerald-400 text-sm"></i>
+              <span class="truncate">งานที่เสร็จสิ้นแล้ว</span>
+            </div>
+            <span id="sideCompletedCount" class="text-[10px] font-mono bg-neutral-900 text-neutral-400 px-1.5 py-0.5 rounded">0</span>
+          </button>
+        </div>
+
+        <!-- Section: Categories -->
+        <div class="space-y-1 pt-1 border-t border-cf-border">
           <div class="flex items-center justify-between px-2.5 text-[11px] font-mono text-neutral-500 uppercase tracking-wider">
             <span>ภารกิจ & หมวดหมู่งาน</span>
             <i class="ph-bold ph-caret-down text-[10px]"></i>
           </div>
-          
+
           <button onclick="setSidebarCategory('ALL')" id="nav-cat-ALL" class="w-full flex items-center justify-between px-2.5 py-1.5 rounded bg-neutral-900/80 text-white font-medium border border-neutral-800 text-left">
             <div class="flex items-center gap-2 truncate">
               <i class="ph-bold ph-stack text-cf-blue"></i>
-              <span class="truncate">ภารกิจทั้งหมด</span>
+              <span class="truncate">ภารกิจทั้งหมด (All Tasks)</span>
             </div>
             <span id="navCountAll" class="text-[10px] font-mono text-neutral-400">0</span>
           </button>
@@ -213,6 +236,35 @@
             <i class="ph-bold ph-plus"></i>
             <span>มอบหมายงานใหม่</span>
           </button>
+        </div>
+      </div>
+
+      <!-- Main Tabs: Active vs Completed Tasks Page -->
+      <div class="flex items-center justify-between border-b border-cf-border pb-0.5">
+        <div class="flex items-center gap-2">
+          <button onclick="switchMainTab('active')" id="tabActiveBtn" class="flex items-center gap-2 px-3.5 py-2 border-b-2 border-cf-blue text-white font-medium text-xs sm:text-sm transition">
+            <i class="ph-bold ph-lightning text-cf-blue"></i>
+            <span>ภารกิจที่กำลังทำ</span>
+            <span id="tabActiveBadge" class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-cf-blue/20 text-sky-300 font-bold border border-cf-blue/40">0</span>
+          </button>
+
+          <button onclick="switchMainTab('completed')" id="tabCompletedBtn" class="flex items-center gap-2 px-3.5 py-2 border-b-2 border-transparent text-neutral-400 hover:text-neutral-200 font-medium text-xs sm:text-sm transition">
+            <i class="ph-bold ph-check-circle text-neutral-500"></i>
+            <span>งานที่เสร็จแล้ว</span>
+            <span id="tabCompletedBadge" class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-neutral-900 text-neutral-400 font-bold border border-neutral-800">0</span>
+          </button>
+        </div>
+
+        <!-- Indicator Legend for Deadline Warnings -->
+        <div class="hidden md:flex items-center gap-3 text-[11px] font-mono text-neutral-400">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-sm bg-rose-500/80 border border-rose-400"></span>
+            <span>1 วัน / เกินกำหนด</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-sm bg-amber-500/80 border border-amber-400"></span>
+            <span>3 วันก่อนส่ง</span>
+          </div>
         </div>
       </div>
 
@@ -724,6 +776,7 @@
     let priorityFilter = 'ALL';
     let statusFilter = 'ALL';
     let assigneeFilter = 'ALL';
+    let currentMainTab = 'active'; // 'active' (กำลังทำ) หรือ 'completed' (งานที่เสร็จแล้ว)
 
     // ข้อมูลสำรองเริ่มต้นกรณีรอการซิงค์จาก Google Sheets
     const defaultTasks = [
@@ -1093,6 +1146,48 @@
       renderAll();
     }
 
+    function switchMainTab(tabName) {
+      currentMainTab = tabName;
+      const tabActiveBtn = document.getElementById('tabActiveBtn');
+      const tabCompletedBtn = document.getElementById('tabCompletedBtn');
+      const sideTabActive = document.getElementById('sideTabActive');
+      const sideTabCompleted = document.getElementById('sideTabCompleted');
+      const statusFilterEl = document.getElementById('filterStatus');
+
+      if (tabName === 'active') {
+        tabActiveBtn.className = 'flex items-center gap-2 px-3.5 py-2 border-b-2 border-cf-blue text-white font-medium text-xs sm:text-sm transition';
+        tabActiveBtn.querySelector('i').className = 'ph-bold ph-lightning text-cf-blue';
+        tabCompletedBtn.className = 'flex items-center gap-2 px-3.5 py-2 border-b-2 border-transparent text-neutral-400 hover:text-neutral-200 font-medium text-xs sm:text-sm transition';
+        tabCompletedBtn.querySelector('i').className = 'ph-bold ph-check-circle text-neutral-500';
+
+        if (sideTabActive) {
+          sideTabActive.className = 'w-full flex items-center justify-between px-2.5 py-2 rounded-md bg-cf-blue/15 text-white font-medium border border-cf-blue/40 text-left transition';
+        }
+        if (sideTabCompleted) {
+          sideTabCompleted.className = 'w-full flex items-center justify-between px-2.5 py-2 rounded-md text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/60 transition text-left border border-transparent';
+        }
+
+        if (statusFilterEl && statusFilterEl.value === 'DONE') {
+          statusFilterEl.value = 'ALL';
+          statusFilter = 'ALL';
+        }
+      } else {
+        tabCompletedBtn.className = 'flex items-center gap-2 px-3.5 py-2 border-b-2 border-emerald-500 text-white font-medium text-xs sm:text-sm transition';
+        tabCompletedBtn.querySelector('i').className = 'ph-bold ph-check-circle text-emerald-400';
+        tabActiveBtn.className = 'flex items-center gap-2 px-3.5 py-2 border-b-2 border-transparent text-neutral-400 hover:text-neutral-200 font-medium text-xs sm:text-sm transition';
+        tabActiveBtn.querySelector('i').className = 'ph-bold ph-lightning text-neutral-500';
+
+        if (sideTabCompleted) {
+          sideTabCompleted.className = 'w-full flex items-center justify-between px-2.5 py-2 rounded-md bg-emerald-950/30 text-white font-medium border border-emerald-500/40 text-left transition';
+        }
+        if (sideTabActive) {
+          sideTabActive.className = 'w-full flex items-center justify-between px-2.5 py-2 rounded-md text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/60 transition text-left border border-transparent';
+        }
+      }
+
+      renderAll();
+    }
+
     function resetFilters() {
       const sInput = document.getElementById('searchInput');
       const sideSearch = document.getElementById('sidebarSearch');
@@ -1113,8 +1208,29 @@
       showToast('รีเซ็ตตัวกรองทั้งหมดแล้ว', 'info');
     }
 
+    // คำนวณความเร่งด่วนตามกำหนดส่ง (1 วัน = สีแดง, 3 วัน = สีเหลืองเข้ม)
+    function getDeadlineUrgency(deadlineStr, status) {
+      if (!deadlineStr || status === 'DONE') return 'normal';
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const target = new Date(deadlineStr);
+      target.setHours(0, 0, 0, 0);
+      const diffDays = Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+
+      if (diffDays <= 1) {
+        return 'critical'; // 1 วันก่อนส่ง หรือเกินกำหนด/วันนี้ -> สีแดง
+      } else if (diffDays <= 3) {
+        return 'warning'; // 2-3 วันก่อนส่ง -> สีเหลืองเข้ม
+      }
+      return 'normal';
+    }
+
     function getFilteredTasks() {
       const filtered = tasks.filter(task => {
+        // แยกหน้า: ภารกิจที่กำลังทำ vs งานที่เสร็จแล้ว
+        if (currentMainTab === 'active' && task.status === 'DONE') return false;
+        if (currentMainTab === 'completed' && task.status !== 'DONE') return false;
+
         if (onlyMyTasksFilter && task.assigneeId !== currentUserId) return false;
         if (categoryFilter !== 'ALL' && task.category !== categoryFilter) return false;
         if (statusFilter !== 'ALL' && task.status !== statusFilter) return false;
@@ -1175,6 +1291,18 @@
       document.getElementById('statProgressRatio').textContent = `${done} / ${total}`;
       const pct = total > 0 ? Math.round((done / total) * 100) : 0;
       document.getElementById('statProgressBar').style.width = `${pct}%`;
+
+      // อัปเดตตัวเลขบนแท็บหน้าหลัก
+      const activeCount = total - done;
+      const tabActiveBadge = document.getElementById('tabActiveBadge');
+      const tabCompletedBadge = document.getElementById('tabCompletedBadge');
+      const sideActiveCount = document.getElementById('sideActiveCount');
+      const sideCompletedCount = document.getElementById('sideCompletedCount');
+
+      if (tabActiveBadge) tabActiveBadge.textContent = activeCount;
+      if (tabCompletedBadge) tabCompletedBadge.textContent = done;
+      if (sideActiveCount) sideActiveCount.textContent = activeCount;
+      if (sideCompletedCount) sideCompletedCount.textContent = done;
 
       const navCountAll = document.getElementById('navCountAll');
       if (navCountAll) navCountAll.textContent = total;
@@ -1248,21 +1376,46 @@
         const doneSub = task.subtasks ? task.subtasks.filter(s => s.done).length : 0;
 
         const dateBadge = formatDateBadge(task.deadline);
-        const nearDeadline = isDeadlineNear(task.deadline) && task.status !== 'DONE';
+        const urgency = getDeadlineUrgency(task.deadline, task.status);
+
+        // ปรับแต่งสี Cardbox และ Date Badge ตามเงื่อนไขระยะเวลาส่งงาน
+        let cardColorStyle = 'bg-cf-card hover:bg-cf-cardHover border-cf-border';
+        let dateBoxStyle = 'border-neutral-800 text-neutral-200 group-hover:border-cf-blue/60 bg-neutral-900';
+        let dateNumStyle = 'text-white';
+        let dateMonthStyle = 'text-neutral-400';
+        let deadlineAlertStyle = 'text-neutral-500';
+
+        if (urgency === 'critical') {
+          // 1 วันก่อนส่ง / เกินกำหนด -> สีแดง
+          cardColorStyle = 'bg-rose-950/20 hover:bg-rose-950/35 border-rose-600/80 ring-1 ring-rose-500/40 shadow-sm shadow-rose-950/50';
+          dateBoxStyle = 'border-rose-500/90 bg-rose-950/50 text-rose-300';
+          dateNumStyle = 'text-rose-400';
+          dateMonthStyle = 'text-rose-300 font-semibold';
+          deadlineAlertStyle = 'text-rose-400 font-bold';
+        } else if (urgency === 'warning') {
+          // 3 วันก่อนส่ง -> สีเหลืองเข้ม (Amber)
+          cardColorStyle = 'bg-amber-950/20 hover:bg-amber-950/35 border-amber-500/80 ring-1 ring-amber-500/40 shadow-sm shadow-amber-950/50';
+          dateBoxStyle = 'border-amber-500/90 bg-amber-950/50 text-amber-300';
+          dateNumStyle = 'text-amber-400';
+          dateMonthStyle = 'text-amber-300 font-semibold';
+          deadlineAlertStyle = 'text-amber-400 font-bold';
+        } else if (isMine) {
+          cardColorStyle = 'bg-cf-card hover:bg-cf-cardHover border-cf-blue/70 ring-1 ring-cf-blue/30';
+        }
 
         const card = document.createElement('div');
-        card.className = `bg-cf-card hover:bg-cf-cardHover border ${isMine ? 'border-cf-blue/70 ring-1 ring-cf-blue/30' : 'border-cf-border'} rounded-lg p-3.5 transition group cursor-pointer space-y-2.5`;
+        card.className = `${cardColorStyle} border rounded-lg p-3.5 transition group cursor-pointer space-y-2.5`;
         card.onclick = () => openViewModal(task.id);
 
         card.innerHTML = `
           <div class="flex items-start justify-between gap-3">
             <div class="flex items-start gap-3.5 min-w-0 flex-1">
-              <!-- กล่องวันที่สี่เหลี่ยม แสดงแทนไอคอนเดิม -->
-              <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-neutral-900 border ${nearDeadline ? 'border-rose-500/80 bg-rose-950/20 text-rose-400' : 'border-neutral-800 text-neutral-200 group-hover:border-cf-blue/60'} flex flex-col items-center justify-center shrink-0 mt-0.5 transition shadow-inner select-none px-1 py-0.5">
-                <span class="text-lg sm:text-xl font-black font-mono leading-none ${nearDeadline ? 'text-rose-400' : 'text-white'}">
+              <!-- กล่องวันที่สี่เหลี่ยม แสดงการเตือนสีแดง/เหลืองเข้ม -->
+              <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-lg border ${dateBoxStyle} flex flex-col items-center justify-center shrink-0 mt-0.5 transition shadow-inner select-none px-1 py-0.5">
+                <span class="text-lg sm:text-xl font-black font-mono leading-none ${dateNumStyle}">
                   ${dateBadge.day}
                 </span>
-                <span class="text-[10px] sm:text-[11px] font-medium leading-tight ${nearDeadline ? 'text-rose-300' : 'text-neutral-400'} mt-1 truncate max-w-full font-sans">
+                <span class="text-[10px] sm:text-[11px] font-medium leading-tight ${dateMonthStyle} mt-1 truncate max-w-full font-sans">
                   ${dateBadge.monthYear}
                 </span>
               </div>
@@ -1273,6 +1426,8 @@
                     ${escapeHtml(task.title)}
                   </h3>
                   ${isMine ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-cf-blue/20 text-cf-blue border border-cf-blue/40 shrink-0">ASSIGNED TO YOU</span>' : ''}
+                  ${urgency === 'critical' ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-500/20 text-rose-400 border border-rose-500/50 shrink-0 animate-pulse">1 DAY / DUE</span>' : ''}
+                  ${urgency === 'warning' ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/20 text-amber-400 border border-amber-500/50 shrink-0">3 DAYS DUE</span>' : ''}
                 </div>
 
                 <div class="flex flex-wrap items-center gap-2 text-xs text-neutral-400 font-mono text-[11px] pt-1">
@@ -1280,7 +1435,7 @@
                   <span>&bull;</span>
                   <span class="text-neutral-400">@${assignee.username}</span>
                   <span>&bull;</span>
-                  <span class="${nearDeadline ? 'text-rose-400 font-semibold' : 'text-neutral-500'}">
+                  <span class="${deadlineAlertStyle}">
                     กำหนดส่ง: ${task.deadline}
                   </span>
                 </div>
@@ -1349,9 +1504,23 @@
         const assignee = TEAM_MEMBERS.find(m => m.id === task.assigneeId) || { name: '?', username: 'unassigned' };
         const category = CATEGORIES[task.category] || { label: task.category };
         const priority = PRIORITIES[task.priority] || PRIORITIES.NORMAL;
+        const urgency = getDeadlineUrgency(task.deadline, task.status);
+
+        let cardStyle = 'bg-cf-card hover:bg-cf-cardHover border-cf-border';
+        let deadlineStyle = 'text-neutral-500';
+
+        if (urgency === 'critical') {
+          cardStyle = 'bg-rose-950/20 hover:bg-rose-950/35 border-rose-600/80 ring-1 ring-rose-500/40';
+          deadlineStyle = 'text-rose-400 font-bold';
+        } else if (urgency === 'warning') {
+          cardStyle = 'bg-amber-950/20 hover:bg-amber-950/35 border-amber-500/80 ring-1 ring-amber-500/40';
+          deadlineStyle = 'text-amber-400 font-bold';
+        } else if (isMine) {
+          cardStyle = 'bg-cf-card hover:bg-cf-cardHover border-cf-blue/70 ring-1 ring-cf-blue/30';
+        }
 
         const card = document.createElement('div');
-        card.className = `bg-cf-card hover:bg-cf-cardHover border ${isMine ? 'border-cf-blue/70 ring-1 ring-cf-blue/30' : 'border-cf-border'} rounded p-3 text-xs space-y-2 cursor-pointer transition`;
+        card.className = `${cardStyle} border rounded p-3 text-xs space-y-2 cursor-pointer transition`;
         card.onclick = () => openViewModal(task.id);
 
         card.innerHTML = `
@@ -1364,7 +1533,7 @@
           </div>
           <div class="pt-1.5 border-t border-cf-border flex items-center justify-between text-[11px] font-mono text-neutral-400">
             <span class="text-neutral-300 truncate">@${assignee.username}</span>
-            <span class="${isDeadlineNear(task.deadline) && task.status !== 'DONE' ? 'text-rose-400 font-semibold' : 'text-neutral-500'}">${task.deadline}</span>
+            <span class="${deadlineStyle}">${task.deadline}</span>
           </div>
         `;
 
