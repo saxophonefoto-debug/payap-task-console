@@ -2119,4 +2119,18 @@
       const month = months[date.getMonth()];
       const hours = String(date.getHours()).padStart(2, '0');
       const mins = String(date.getMinutes()).padStart(2, '0');
-      return `${day} ${month} ${hours}:${mins}`
+      return `${day} ${month} ${hours}:${mins}`;
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>
