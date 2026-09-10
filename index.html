@@ -523,8 +523,8 @@
 
       <div class="p-5 space-y-5 text-xs text-neutral-300">
         <div>
-          <h2 id="viewTaskTitle" class="text-base font-bold text-white leading-relaxed">ชื่องาน</h2>
-          <div class="text-[11px] text-neutral-500 font-mono mt-1 flex flex-wrap items-center gap-2">
+          <h2 id="viewTaskTitle" class="text-xl sm:text-2xl font-black text-white leading-snug tracking-tight">ชื่องาน</h2>
+          <div class="text-[11px] text-neutral-500 font-mono mt-1.5 flex flex-wrap items-center gap-2">
             <span>ID: <span id="viewTaskIdText" class="text-neutral-400">task-000</span></span>
             <span>&bull;</span>
             <span>Created: <span id="viewTaskCreatedAt">-</span></span>
@@ -1114,7 +1114,7 @@
     }
 
     function getFilteredTasks() {
-      return tasks.filter(task => {
+      const filtered = tasks.filter(task => {
         if (onlyMyTasksFilter && task.assigneeId !== currentUserId) return false;
         if (categoryFilter !== 'ALL' && task.category !== categoryFilter) return false;
         if (statusFilter !== 'ALL' && task.status !== statusFilter) return false;
@@ -1132,6 +1132,33 @@
 
         return true;
       });
+
+      // เรียงลำดับงานตามวันที่: วันที่ที่จะถึงก่อน (Ascending) ให้อยู่ด้านบน
+      return filtered.sort((a, b) => {
+        const timeA = a.deadline ? new Date(a.deadline).getTime() : 9999999999999;
+        const timeB = b.deadline ? new Date(b.deadline).getTime() : 9999999999999;
+        return timeA - timeB;
+      });
+    }
+
+    function formatDateBadge(deadlineStr) {
+      if (!deadlineStr) {
+        return { day: '--', monthYear: 'ไม่ระบุ' };
+      }
+      const parts = deadlineStr.split('-');
+      if (parts.length === 3) {
+        const year = parseInt(parts[0], 10);
+        const monthIdx = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+        const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+        const beYear = year + 543;
+        const shortBeYear = String(beYear).slice(-2);
+        return {
+          day: day || parts[2],
+          monthYear: `${thaiMonths[monthIdx] || parts[1]} ${shortBeYear}`
+        };
+      }
+      return { day: '?', monthYear: deadlineStr };
     }
 
     function renderStats(filteredList) {
@@ -1220,32 +1247,41 @@
         const totalSub = task.subtasks ? task.subtasks.length : 0;
         const doneSub = task.subtasks ? task.subtasks.filter(s => s.done).length : 0;
 
+        const dateBadge = formatDateBadge(task.deadline);
+        const nearDeadline = isDeadlineNear(task.deadline) && task.status !== 'DONE';
+
         const card = document.createElement('div');
         card.className = `bg-cf-card hover:bg-cf-cardHover border ${isMine ? 'border-cf-blue/70 ring-1 ring-cf-blue/30' : 'border-cf-border'} rounded-lg p-3.5 transition group cursor-pointer space-y-2.5`;
         card.onclick = () => openViewModal(task.id);
 
         card.innerHTML = `
           <div class="flex items-start justify-between gap-3">
-            <div class="flex items-start gap-3 min-w-0 flex-1">
-              <div class="w-8 h-8 rounded bg-neutral-900 border border-neutral-800 text-cf-blue flex items-center justify-center shrink-0 mt-0.5 group-hover:border-cf-blue/50 transition">
-                <i class="ph-bold ${category.icon} text-base"></i>
+            <div class="flex items-start gap-3.5 min-w-0 flex-1">
+              <!-- กล่องวันที่สี่เหลี่ยม แสดงแทนไอคอนเดิม -->
+              <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-neutral-900 border ${nearDeadline ? 'border-rose-500/80 bg-rose-950/20 text-rose-400' : 'border-neutral-800 text-neutral-200 group-hover:border-cf-blue/60'} flex flex-col items-center justify-center shrink-0 mt-0.5 transition shadow-inner select-none px-1 py-0.5">
+                <span class="text-lg sm:text-xl font-black font-mono leading-none ${nearDeadline ? 'text-rose-400' : 'text-white'}">
+                  ${dateBadge.day}
+                </span>
+                <span class="text-[10px] sm:text-[11px] font-medium leading-tight ${nearDeadline ? 'text-rose-300' : 'text-neutral-400'} mt-1 truncate max-w-full font-sans">
+                  ${dateBadge.monthYear}
+                </span>
               </div>
 
               <div class="min-w-0 flex-1">
-                <div class="flex flex-wrap items-center gap-2 mb-2">
-                  <h3 class="font-bold text-white text-sm leading-relaxed break-words group-hover:text-cf-blue transition">
+                <div class="flex flex-wrap items-center gap-2 mb-1.5">
+                  <h3 class="font-extrabold text-white text-lg sm:text-xl leading-snug break-words group-hover:text-cf-blue transition tracking-tight">
                     ${escapeHtml(task.title)}
                   </h3>
                   ${isMine ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-cf-blue/20 text-cf-blue border border-cf-blue/40 shrink-0">ASSIGNED TO YOU</span>' : ''}
                 </div>
 
                 <div class="flex flex-wrap items-center gap-2 text-xs text-neutral-400 font-mono text-[11px] pt-1">
-                  <span class="text-neutral-400 font-sans">${category.label}</span>
+                  <span class="text-neutral-300 font-sans font-medium">${category.label}</span>
                   <span>&bull;</span>
                   <span class="text-neutral-400">@${assignee.username}</span>
                   <span>&bull;</span>
-                  <span class="${isDeadlineNear(task.deadline) && task.status !== 'DONE' ? 'text-rose-400 font-semibold' : 'text-neutral-500'}">
-                    Due: ${task.deadline}
+                  <span class="${nearDeadline ? 'text-rose-400 font-semibold' : 'text-neutral-500'}">
+                    กำหนดส่ง: ${task.deadline}
                   </span>
                 </div>
               </div>
@@ -1323,7 +1359,7 @@
             <span class="text-neutral-500">${category.label}</span>
             <span class="px-1.5 py-0.5 rounded border ${priority.badge}">${priority.label}</span>
           </div>
-          <div class="font-medium text-white leading-snug">
+          <div class="font-extrabold text-white text-base leading-snug tracking-tight">
             ${escapeHtml(task.title)}
           </div>
           <div class="pt-1.5 border-t border-cf-border flex items-center justify-between text-[11px] font-mono text-neutral-400">
@@ -2083,18 +2119,4 @@
       const month = months[date.getMonth()];
       const hours = String(date.getHours()).padStart(2, '0');
       const mins = String(date.getMinutes()).padStart(2, '0');
-      return `${day} ${month} ${hours}:${mins}`;
-    }
-
-    function escapeHtml(text) {
-      if (!text) return '';
-      return String(text)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
-  </script>
-</body>
-</html>
+      return `${day} ${month} ${hours}:${mins}`
